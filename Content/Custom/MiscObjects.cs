@@ -167,6 +167,9 @@ public static class MiscObjects
 
         return new CustomObject("Feather", "feather", obj)
             .WithConfigGroup(ConfigGroup.Feather)
+            .WithInputGroup(InputGroup.Feather)
+            .WithOutputGroup(OutputGroup.Feather)
+            .WithReceiverGroup(ReceiverGroup.Feather)
             .WithBroadcasterGroup(BroadcasterGroup.Feather);
     }
 

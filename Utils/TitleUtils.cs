@@ -74,6 +74,7 @@ public static class TitleUtils
 
     public static void CancelTitle()
     {
+        if (!_fsm) return;
         _fsm.SendEvent("FINISHED");
         _fsm.SendEvent("NPC TITLE DOWN");
     }

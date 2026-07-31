@@ -849,6 +849,8 @@ public static class EnemyFixers
 
         var sp = fsm.GetState("Set Pos");
         var sp2 = fsm.GetState("Set Pos 2");
+        
+        fsm.GetState("Warp?").AddAction(() => fsm.SendEvent("FINISHED"), 0);
             
         sp.AddAction(AdjustBounds, 0);
         sp2.AddAction(AdjustBounds, 0);

@@ -29,6 +29,13 @@ public static class ReceiverGroup
         }))
     ]);
     
+    public static readonly List<EventReceiverType> Feather = GroupUtils.Merge(Generic, [
+        EventManager.RegisterReceiverType(new EventReceiverType("set_feather_rot", "SetRotation", (o, b) =>
+        {
+            Behaviour.Custom.Feather.SetRotation(b?.GetVariable<float>("Rotation", 0) ?? 0);
+        }))
+    ]);
+    
     public static readonly List<EventReceiverType> Bumpers = GroupUtils.Merge(Generic, [
         EventManager.RegisterReceiverType(new EventReceiverType("bouncer_evil", "SetFire", o =>
         {

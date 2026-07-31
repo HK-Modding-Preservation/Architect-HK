@@ -1,6 +1,5 @@
 using System.Collections;
 using Architect.Editor;
-using Architect.Utils;
 using UnityEngine;
 
 namespace Architect.Behaviour.Utility;
@@ -8,6 +7,7 @@ namespace Architect.Behaviour.Utility;
 public class WalkTarget : MonoBehaviour
 {
     public float speed;
+    public string anim = "Walk";
     
     private bool _walking;
     
@@ -30,7 +30,7 @@ public class WalkTarget : MonoBehaviour
         hero.RelinquishControl();
         hero.StopAnimationControl();
         var animator = hero.GetComponent<tk2dSpriteAnimator>();
-        animator.Play("Walk");
+        animator.Play(anim);
 
         EditManager.IgnoreControlRelinquished = true;
         _walking = true;

@@ -1049,7 +1049,14 @@ public static class ConfigGroup
                 {
                     o.GetComponent<WalkTarget>().speed = Mathf.Abs(value.GetValue());
                 }
-            ).WithDefaultValue(5).WithPriority(1))
+            ).WithDefaultValue(5).WithPriority(1)),
+        ConfigurationManager.RegisterConfigType(new ChoiceConfigType("Mode", "walk_anim", 
+            (o, value) =>
+            {
+                var wt = o.GetComponent<WalkTarget>();
+                wt.anim = value.GetStringValue();
+            }
+        ).WithDefaultValue(0).WithOptions("Walk", "Run", "Sprint"))
     ]);
 
     public static readonly List<ConfigType> GrubBottle = GroupUtils.Merge(PersistentBreakable, [

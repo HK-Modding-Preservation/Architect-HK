@@ -443,6 +443,10 @@ public class Feather : PreviewableBehaviour
                     _cometParticleRenderer.material = _blink ? CometBlinkTrail : CometTrail;
                 }
             }
-        }
+        } 
     }
+
+    public static void SetRotation(float rot) => _comet.transform.SetRotation2D(rot);
+    
+    public static float GetRotation() => _comet.transform.GetRotation2D();
 }

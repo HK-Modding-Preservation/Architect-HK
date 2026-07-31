@@ -25,6 +25,13 @@ public static class OutputGroup
                 o => o.GetComponent<ObjectExtractor>().spawn)
         )
     ];
+    
+    public static readonly List<OutputType> Feather = [
+        EventManager.RegisterOutputType(
+            new OutputType("feather_current_rot", "Rotation", "Number", 
+                o => Behaviour.Custom.Feather.GetRotation())
+        )
+    ];
 
     public static readonly List<OutputType> Enemies =
     [

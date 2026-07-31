@@ -1108,6 +1108,15 @@ public static class VanillaObjects
         AddGhost("Thistlewind");
         AddGhost("Vespa", "Hive_05", "Battle Scene/Vespa NPC");
 
+        Categories.Hazards.Add(new PreloadObject("Revek", "revek_battler",
+            ("RestingGrounds_08", "Ghost Battle Revek"),
+            postSpawnAction: o =>
+            {
+                var fsm = o.LocateMyFSM("Control");
+                fsm.fsm.globalTransitions = [];
+                fsm.GetState("Dormant").AddAction(() => fsm.SendEvent("GHOST NPC KILLED"));
+            }));
+
         return;
 
         void AddGhost(string name, string scene = "RestingGrounds_08", string path = null)
