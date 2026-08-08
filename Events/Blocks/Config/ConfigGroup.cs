@@ -585,7 +585,12 @@ public static class ConfigGroup
             new ChoiceConfigType<TextBlock>("Style", "display_style", (o, value) =>
             {
                 o.Dream = value.GetValue() == 1;
-            }).WithOptions("Normal", "Dream").WithDefaultValue(0))
+            }).WithOptions("Normal", "Dream").WithDefaultValue(0)),
+        ConfigurationManager.RegisterConfigType(
+            new BoolConfigType<TextBlock>("Take Control", "text_display_take_control", (o, value) =>
+            {
+                o.TakeControl = value.GetValue();
+            }).WithDefaultValue(true))
     ];
     
     public static readonly List<ConfigType> ThoughtDisplay =
@@ -638,7 +643,12 @@ public static class ConfigGroup
             new IntConfigType<ChoiceBlock>("Cost Amount", "choice_cost", (o, value) =>
             {
                 o.Cost = value.GetValue();
-            }).WithDefaultValue(0))
+            }).WithDefaultValue(0)),
+        ConfigurationManager.RegisterConfigType(
+            new BoolConfigType<ChoiceBlock>("Take Control", "choice_take_control", (o, value) =>
+            {
+                o.TakeControl = value.GetValue();
+            }).WithDefaultValue(true))
     ];
     
     public static readonly List<ConfigType> PdBool =

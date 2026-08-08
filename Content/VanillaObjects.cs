@@ -1212,11 +1212,13 @@ public static class VanillaObjects
 
     private static PlaceableObject AddAttack(string name, string id, (string, string) path,
         string fsmName, string stateName, int index,
-        Action<GameObject> preloadAction = null)
+        Action<GameObject> preloadAction = null,
+        Action<GameObject> postSpawnAction = null)
     {
         return Categories.Attacks.Add(new PreloadObject(name, id,
                 path,
                 preloadAction: preloadAction,
+                postSpawnAction: postSpawnAction,
                 extraction: o => ((SpawnObjectFromGlobalPool)o.LocateMyFSM(fsmName)
                     .GetState(stateName).actions[index]).gameObject.value));
     }
@@ -1234,6 +1236,17 @@ public static class VanillaObjects
 
     private static void AddMiscObjects()
     {
+        Categories.Effects.Add(new PreloadObject("Blur Plane", "blur_plane",
+                    ("Tutorial_01", "BlurPlane"), 
+                    sprite: ResourceUtils.LoadSpriteResource("blur", ppu: 37.75f),
+                    description: "Having multiple blur planes together can cause issues.\n" +
+                                 "It is recommended to disable the vanilla BlurPlane when using a custom one.\n\n" +
+                                 "Blur Planes can sometimes cause unusual distortion,\n" +
+                                 "if this happens try adjusting the Blur Plane's scale.",
+                    preloadAction: MiscFixers.AddComponent<ParticleObjects.FollowCamera>)
+                .WithScaleAction((_, _) => {}))
+            .DoIgnoreScale();
+        
         Categories.Attacks.Add(new PreloadObject("Vengeful Spirit", "vengeful_spirit", ("Knight_Pickup", "Knight"),
             extraction: o => ((SpawnObjectFromGlobalPool)((SpawnObjectFromGlobalPool)o.LocateMyFSM("Spell Control")
                     .GetState("Fireball 1").Actions[3]).gameObject.value.LocateMyFSM("Fireball Cast")

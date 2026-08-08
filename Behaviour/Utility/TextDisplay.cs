@@ -11,6 +11,8 @@ public class TextDisplay : MonoBehaviour, IDisplayable
     public ScriptBlock Block;
     public int mode;
     public int cost;
+
+    public bool takeControl = true;
     
     private static TextDisplay _current;
     private static TextDisplay _prev;
@@ -113,7 +115,7 @@ public class TextDisplay : MonoBehaviour, IDisplayable
         }
 
         _current = this;
-        HeroController.instance.RelinquishControl();
+        if (takeControl) HeroController.instance.RelinquishControl();
         (mode == 2 ? YnDialogueBox : DialogueBox).StartConversation(text, "ArchitectMod");
     }
 }

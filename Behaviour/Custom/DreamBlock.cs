@@ -293,6 +293,11 @@ public class DreamBlock : MonoBehaviour
 
         DashTimer.SetValue(hc, hc.dashingDown ? hc.DOWN_DASH_TIME : hc.DASH_TIME);
     }
+    
+    private static readonly Material StarMaterial = new(Shader.Find("Sprites/Default"))
+    {
+        mainTexture = ResourceUtils.LoadSpriteResource("DreamBlock.star", FilterMode.Point).texture
+    };
 
     public void SetupParticles()
     {
@@ -332,10 +337,7 @@ public class DreamBlock : MonoBehaviour
         });
 
         var rend = ps.GetComponent<ParticleSystemRenderer>();
-        rend.material = new Material(Shader.Find("Sprites/Default"))
-        {
-            mainTexture = ResourceUtils.LoadSpriteResource("DreamBlock.star", FilterMode.Point).texture
-        };
+        rend.material = StarMaterial;
         rend.sortingOrder = 1;
 
         _shape = ps.shape;

@@ -17,6 +17,13 @@
   "remove_scene": {
     "name": "room_remover"
   },
+  "scattered_and_lost_bubble": {
+    "name": "celeste_bubble",
+    "config": {
+      "Velocity": "bubble_speed",
+      "z_offset": 0.005
+    }
+  },
   "HK_break_wall": {
     "name": "breakable_wall_1"
   },

@@ -4,7 +4,7 @@
     <TargetFramework>net472</TargetFramework>
     <AssemblyName>Architect_HK</AssemblyName>
     <Product>Architect</Product>
-    <Version>3.32.4.0</Version>
+    <Version>3.32.5.1</Version>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <LangVersion>preview</LangVersion>
     <Nullable>disable</Nullable>

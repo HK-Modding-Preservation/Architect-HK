@@ -47,6 +47,7 @@ public class TextBlock : ScriptBlock
     
     public string Text = "";
     public bool Dream;
+    public bool TakeControl = true;
 
     public override void SetupReference()
     {
@@ -55,6 +56,7 @@ public class TextBlock : ScriptBlock
 
         _display.text = Text;
         _display.mode = Dream ? 0 : 1;
+        _display.takeControl = TakeControl;
     }
 
     protected override void Trigger(string trigger)
@@ -72,6 +74,7 @@ public class ChoiceBlock : ScriptBlock
     protected override string Name => "Choice Display";
     
     public string Text;
+    public bool TakeControl = true;
     public int Cost;
 
     private TextDisplay _display;
@@ -84,6 +87,7 @@ public class ChoiceBlock : ScriptBlock
         _display.mode = 2;
         _display.text = Text;
         _display.cost = Cost;
+        _display.takeControl = TakeControl;
     }
 
     protected override void Trigger(string trigger)

@@ -11,7 +11,7 @@ public class ObjectHook : PreviewableBehaviour
     public GameObject o;
     public int start;
     public int index;
-    
+
     private bool _targetingCustom;
 
     public void FindObject(bool force = false)
@@ -45,6 +45,11 @@ public class ObjectHook : PreviewableBehaviour
                 break;
             case 2:
                 o.SetActive(true);
+                break;
+            case 3:
+                if (isAPreview) return;
+                o = Instantiate(o);
+                o.transform.position = transform.position;
                 break;
         }
     }

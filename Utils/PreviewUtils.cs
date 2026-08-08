@@ -117,6 +117,7 @@ public static class PreviewUtils
                 Destroy(tsa);
             }
             
+            gameObject.RemoveComponentsInChildren<SpawnJarControl>();
             gameObject.RemoveComponentsInChildren<PersistentBoolItem>();
             gameObject.RemoveComponentsInChildren<FSMActivator>();
             gameObject.RemoveComponentsInChildren<PersistentIntItem>();

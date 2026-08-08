@@ -58,6 +58,7 @@ public static class MiscObjects
         Categories.Platforming.Add(CreateBumper());
         Categories.Platforming.Add(CreateDreamBlock());
         Categories.Platforming.Add(CreateFeather());
+        Categories.Platforming.Add(CreateBubble());
 
         Categories.Hazards.Add(CreateCustomHazard("White Thorns", "white_thorns",
         [
@@ -147,6 +148,87 @@ public static class MiscObjects
 
         return new CustomObject("Dream Block", "dream_block", obj)
             .WithConfigGroup(ConfigGroup.DreamBlock);
+    }
+
+    private static PlaceableObject CreateBubble()
+    {
+        Bubble.Init();
+        
+        var bubble = new GameObject("Bubble")
+        {
+            layer = (int)PhysLayers.INTERACTIVE_OBJECT
+        };
+
+        var particles = new GameObject("Particles")
+        {
+            transform =
+            {
+                parent = bubble.transform,
+                localPosition = new Vector3(0, 0, 0.05f)
+            }
+        };
+
+        var ps = particles.AddComponent<ParticleSystem>();
+        var main = ps.main;
+        main.simulationSpace = ParticleSystemSimulationSpace.World;
+        main.startLifetimeMultiplier = 1.5f;
+        main.startSpeedMultiplier = 0;
+
+        var sol = ps.sizeOverLifetime;
+        sol.enabled = true;
+        sol.size = new ParticleSystem.MinMaxCurve(1, 
+            new AnimationCurve(new Keyframe(0, 0.5f), new Keyframe(1, 0)));
+        
+        var emission = ps.emission;
+        emission.rateOverTimeMultiplier = 0;
+
+        var psr = particles.GetComponent<ParticleSystemRenderer>();
+        psr.material = new Material(Shader.Find("Sprites/Default"))
+        {
+            mainTexture = ResourceUtils.LoadSpriteResource("Bubble.particle", FilterMode.Point).texture
+        };
+        
+        bubble.SetActive(false);
+        Object.DontDestroyOnLoad(bubble);
+        
+        bubble.transform.position = new Vector3(0, 0, 0.005f);
+        
+        var detector = new GameObject("Detector")
+        {
+            transform = { parent = bubble.transform },
+            layer = LayerMask.NameToLayer("Hero Detector")
+        };
+        
+        var detectCol = detector.AddComponent<CircleCollider2D>();
+        detectCol.isTrigger = true;
+        detectCol.radius = 0.7f;
+
+        var td = new GameObject("Terrain Detector")
+        {
+            transform = { parent = bubble.transform },
+            layer = (int)PhysLayers.TERRAIN_DETECTOR
+        };
+        
+        var tdCol = td.AddComponent<CircleCollider2D>();
+        tdCol.isTrigger = false;
+        tdCol.radius = 1;
+        
+        td.AddComponent<Rigidbody2D>().constraints = RigidbodyConstraints2D.FreezeAll;
+        
+        td.AddComponent<Bubble.TerrainDetector>().bubble = 
+            detector.AddComponent<Bubble.Detector>().bubble = bubble.AddComponent<Bubble>();
+
+        var col = bubble.AddComponent<CircleCollider2D>();
+        col.isTrigger = true;
+        col.radius = 0.7f;
+
+        bubble.AddComponent<SpriteRenderer>();
+
+        return new CustomObject("Bubble", "celeste_bubble", bubble, sprite: Bubble.Red.Idle[0],
+            description: "Carries a player in the direction they hold down until they hit a wall or dash out,\n" +
+                         "refreshing their dash and double jump.")
+            .WithConfigGroup(ConfigGroup.Bubble)
+            .WithBroadcasterGroup(BroadcasterGroup.Activatable);
     }
     
     private static PlaceableObject CreateFeather()

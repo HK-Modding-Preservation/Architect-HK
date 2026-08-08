@@ -245,7 +245,22 @@ public static class SceneUtils
 
         var osm = GameManager.instance.sm;
         if (osm) osm.tag = "Untagged";
-        USceneManager.UnloadSceneAsync(current);
+        try
+        {
+            USceneManager.UnloadSceneAsync(current);
+        }
+        catch
+        {
+            //
+        }
+        try
+        {
+            USceneManager.UnloadSceneAsync($"{current}_boss");
+        }
+        catch
+        {
+            //
+        }
     }
     
     private static AtmosCue NoAtmosCue => field ??=

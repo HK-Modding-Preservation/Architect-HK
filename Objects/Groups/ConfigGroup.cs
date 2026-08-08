@@ -106,10 +106,10 @@ public static class ConfigGroup
                 o.GetComponent<ObjectHook>().childPath = value.GetValue();
             })),
         ConfigurationManager.RegisterConfigType(
-            new ChoiceConfigType("Start Mode", "object_hook_start", (o, value) =>
+            new ChoiceConfigType("Hook Mode", "object_hook_start", (o, value) =>
             {
                 o.GetComponent<ObjectHook>().start = value.GetValue();
-            }).WithOptions("Normal", "Inactive", "Active").WithDefaultValue(0)),
+            }).WithOptions("Normal", "Deactivate", "Activate", "Duplicate").WithDefaultValue(0)),
         ConfigurationManager.RegisterConfigType(
             new IntConfigType("Index", "object_hook_index", (o, value) =>
             {
@@ -293,6 +293,19 @@ public static class ConfigGroup
             {
                 o.GetComponent<Feather>().respawnTime = value.GetValue();
             }).WithDefaultValue(6))
+    ]);
+    
+    public static readonly List<ConfigType> Bubble =  GroupUtils.Merge(Visible, [
+        ConfigurationManager.RegisterConfigType(
+            new FloatConfigType("Speed", "bubble_speed", (o, value) =>
+            {
+                o.GetComponent<Bubble>().speed = value.GetValue();
+            }).WithDefaultValue(24)),
+        ConfigurationManager.RegisterConfigType(
+            new FloatConfigType("Respawn Time", "bubble_respawn_time", (o, value) =>
+            {
+                o.GetComponent<Bubble>().respawnTime = value.GetValue();
+            }).WithDefaultValue(5))
     ]);
     
     public static readonly List<ConfigType> Cocoon =  GroupUtils.Merge(Visible, [
