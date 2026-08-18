@@ -41,6 +41,7 @@ public static class AbilityObjects
         AbilityCrystal.Init();
         MakeCrystals("Dash", "dash");
         MakeCrystals("Shade Dash", "shadow_dash");
+        MakeCrystals("Crystal Dash", "crystal_dash");
         MakeCrystals("Double Jump", "wings");
         
         Binding.Init();
@@ -62,7 +63,7 @@ public static class AbilityObjects
         Categories.Abilities.Add(MakeAbilityBinding("dash", "Dash Binding"));
         Categories.Abilities.Add(MakeAbilityBinding("shadow_dash", "Shadow Dash Binding"));
         Categories.Abilities.Add(MakeAbilityBinding("claw", "Mantis Claw Binding"));
-        Categories.Abilities.Add(MakeAbilityBinding("cdash", "Crystal Heart Binding"));
+        Categories.Abilities.Add(MakeAbilityBinding("cdash", "Crystal Dash Binding"));
         Categories.Abilities.Add(MakeAbilityBinding("tear", "Isma's Tear Binding"));
         Categories.Abilities.Add(MakeAbilityBinding("jump", "Jump Binding"));
         Categories.Abilities.Add(MakeAbilityBinding("wings", "Monarch Wings Binding"));
@@ -254,7 +255,6 @@ public static class AbilityObjects
     {
         On.HeroController.CanDash += (orig, self) => BindingCheck(orig(self), "dash");
         On.HeroController.CanFocus += (orig, self) => BindingCheck(orig(self), "focus");
-        On.HeroController.CanSuperDash += (orig, self) => BindingCheck(orig(self), "cdash");
         On.HeroController.CanAttack += (orig, self) => BindingCheck(orig(self), "attack");
         On.HeroController.CanJump += (orig, self) => BindingCheck(orig(self), "jump");
         On.HeroController.CanDoubleJump += (orig, self) => BindingCheck(orig(self), "wings");
@@ -269,6 +269,8 @@ public static class AbilityObjects
                                    || ActiveCrystals.GetValueOrDefault("shadow_dash") > 0
                                    || _shadowDashCheck,
                 "hasLantern" => BindingCheck(orig, "lantern"),
+                "hasSuperDash" => BindingCheck(orig, "cdash") 
+                                  || ActiveCrystals.GetValueOrDefault("crystal_dash") > 0,
                 "hasWalljump" => BindingCheck(orig, "claw"),
                 _ => orig
             };
@@ -429,6 +431,21 @@ public static class AbilityObjects
         On.HeroController.CanDash += (orig, self) => ActiveCrystals.GetValueOrDefault("dash") > 0
                                                      || ActiveCrystals.GetValueOrDefault("shadow_dash") > 0
                                                      || orig(self);
+
+        On.PlayMakerFSM.Awake += (orig, self) =>
+        {
+            orig(self);
+            if (self.FsmName == "Superdash" && self.TryGetState("Dashing", out var d))
+                d.AddAction(() =>
+                {
+                    if (ActiveCrystals.ContainsKey("crystal_dash"))
+                    {
+                        ActiveCrystals["crystal_dash"] -= 1;
+                        RefreshCrystalUI();
+                    }
+                });
+        };
+        
         On.HeroController.HeroDash += (orig, self) =>
         {
             orig(self);

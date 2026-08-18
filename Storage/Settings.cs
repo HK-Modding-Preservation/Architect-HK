@@ -275,7 +275,7 @@ public static class Settings
         HitboxesInEditor = Bind(
             "Options",
             "HitboxesInEditor",
-            false,
+            true,
             "Determines whether objects in edit mode should have hitboxes"
         );
         

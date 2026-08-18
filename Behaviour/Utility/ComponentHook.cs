@@ -17,7 +17,7 @@ public class ComponentHook : PreviewableBehaviour
     
     private bool _done;
 
-    private UnityEngine.Behaviour[] _components;
+    private UnityEngine.Component[] _components;
 
     public void Setup()
     {
@@ -29,7 +29,7 @@ public class ComponentHook : PreviewableBehaviour
         
         _components = (recursive ?
             target.GetComponentsInChildren<UnityEngine.Behaviour>() : 
-            target.GetComponents<UnityEngine.Behaviour>()).Where(c => c.GetType().Name == componentName)
+            target.GetComponents<UnityEngine.Component>()).Where(c => c.GetType().Name == componentName)
             .ToArray();
         
         foreach (var c in _components)
@@ -37,7 +37,7 @@ public class ComponentHook : PreviewableBehaviour
             if (mode != 3)
             {
                 if (mode == 0) Destroy(c);
-                else c.enabled = mode == 2;
+                else if (c is UnityEngine.Behaviour b) b.enabled = mode == 2;
             }
 
             if (_fieldInfo == null)

@@ -1,5 +1,5 @@
-using System;
 using Architect.Behaviour.Custom;
+using Architect.Behaviour.Fixers;
 using Architect.Behaviour.Utility;
 using Architect.Objects.Categories;
 using Architect.Objects.Groups;
@@ -298,6 +298,8 @@ public static class MiscObjects
     private static PlaceableObject CreateSquare()
     {
         var square = CreateShape("square");
+        
+        square.AddComponent<MiscFixers.Landable>();
 
         var collider = square.AddComponent<BoxCollider2D>();
         collider.isTrigger = true;
@@ -307,12 +309,15 @@ public static class MiscObjects
                 "A square that can be coloured or given a hitbox for custom collision.\n\n" +
                 "RGBA colour values should be between 0 and 1.")
             .WithConfigGroup(ConfigGroup.ColouredShapes)
+            .WithBroadcasterGroup(BroadcasterGroup.Landable)
             .WithRotationGroup(RotationGroup.All);
     }
 
     private static PlaceableObject CreateCircle()
     {
         var circle = CreateShape("circle");
+        
+        circle.AddComponent<MiscFixers.Landable>();
 
         var collider = circle.AddComponent<PolygonCollider2D>();
         collider.isTrigger = true;
@@ -333,6 +338,7 @@ public static class MiscObjects
                 "A circle that can be coloured or given a hitbox for custom collision." +
                 "\n\nRGBA colour values should be between 0 and 1.")
             .WithConfigGroup(ConfigGroup.ColouredShapes)
+            .WithBroadcasterGroup(BroadcasterGroup.Landable)
             .WithRotationGroup(RotationGroup.All);
     }
     
@@ -360,6 +366,7 @@ public static class MiscObjects
                 "\n\nRGBA colour values should be between 0 and 1.",
                 sprite: ResourceUtils.LoadSpriteResource("line_point", ppu:200))
             .WithConfigGroup(ConfigGroup.Line)
+           
             .WithRotationGroup(RotationGroup.All);
     }
 
@@ -367,6 +374,8 @@ public static class MiscObjects
     {
         var triangle = CreateShape("triangle");
 
+        triangle.AddComponent<MiscFixers.Landable>();
+        
         var collider = triangle.AddComponent<EdgeCollider2D>();
         collider.isTrigger = true;
         collider.points =
@@ -381,6 +390,7 @@ public static class MiscObjects
                 "A triangle that can be coloured or given a hitbox for custom collision." +
                 "\n\nRGBA colour values should be between 0 and 1.")
             .WithConfigGroup(ConfigGroup.ColouredShapes)
+            .WithBroadcasterGroup(BroadcasterGroup.Landable)
             .WithRotationGroup(RotationGroup.All);
     }
 

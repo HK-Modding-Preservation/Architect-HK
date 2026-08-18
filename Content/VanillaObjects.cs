@@ -603,6 +603,17 @@ public static class VanillaObjects
                 if (!fsm) return;
                 ((FloatDivide)fsm.GetState("Extend").actions[1]).divideBy.value *= s;
             }));
+
+        Categories.Interactable.Add(new PreloadObject("Dirtmouth Lift", "dirtmouth_lift",
+            ("Town", "_Scenery/Mines Exit Lift"),
+            preloadAction: o =>
+            {
+                var sprites = o.transform.Find("sprites");
+                sprites.Find("lift_main").gameObject.AddComponent<PlaceableObject.SpriteSource>();
+                sprites.Find("Chains").gameObject.SetActive(false);
+                o.AddComponent<MiscFixers.Lift>();
+            })
+            .WithConfigGroup(ConfigGroup.MinesLift));
         
         Categories.Hazards.Add(new PreloadObject("Stomper", "stomper", 
             ("Mines_37", "stomper_offset"), 
@@ -729,6 +740,7 @@ public static class VanillaObjects
             .WithScaleAction(MiscFixers.ScaleEnemyBullet)
             .WithConfigGroup(ConfigGroup.Velocity)
             .WithInputGroup(InputGroup.Velocity)
+            .WithBroadcasterGroup(BroadcasterGroup.Hittable)
             .WithReceiverGroup(ReceiverGroup.Velocity);
         
         AddEnemy("Belfly", "belfly", ("Deepnest_East_07", "Ceiling Dropper"));
@@ -1236,6 +1248,20 @@ public static class VanillaObjects
 
     private static void AddMiscObjects()
     {
+        Categories.Misc.Add(new PreloadObject("Standard Geo Rock", "geo_rock_1",
+            ("Crossroads_07", "Geo Rock 1"),
+            preloadAction: MiscFixers.FixRotation,
+            postSpawnAction: MiscFixers.FixGeoRock)
+            .WithConfigGroup(ConfigGroup.GeoRock)
+            .WithBroadcasterGroup(BroadcasterGroup.GeoRock));
+        
+        Categories.Misc.Add(new PreloadObject("Abyss Geo Rock", "geo_rock_2",
+            ("Abyss_06_Core", "Geo Rock Abyss"),
+            preloadAction: MiscFixers.FixRotation,
+            postSpawnAction: MiscFixers.FixGeoRock)
+            .WithConfigGroup(ConfigGroup.GeoRock)
+            .WithBroadcasterGroup(BroadcasterGroup.GeoRock));
+        
         Categories.Effects.Add(new PreloadObject("Blur Plane", "blur_plane",
                     ("Tutorial_01", "BlurPlane"), 
                     sprite: ResourceUtils.LoadSpriteResource("blur", ppu: 37.75f),

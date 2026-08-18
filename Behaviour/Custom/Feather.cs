@@ -27,6 +27,8 @@ public class Feather : PreviewableBehaviour
     private static AudioClip _loseFeather;
     private static AudioClip _loop;
 
+    public bool legacy;
+
     private static BoxCollider2D _heroBox;
 
     private static bool _regainControl;
@@ -96,7 +98,7 @@ public class Feather : PreviewableBehaviour
         _dt = 0;
 
         AbilityObjects.RechargeShadowDash();
-        StartCoroutine(Fly());
+        StartCoroutine(legacy ? FlyLegacy() : Fly());
         StartCoroutine(Respawn());
     }
 
@@ -410,6 +412,112 @@ public class Feather : PreviewableBehaviour
             
             return (target, pushing);
         }
+    }
+    
+    private IEnumerator FlyLegacy()
+    {
+        var hero = HeroController.instance;
+
+        _remainingTime = Mathf.Max(_remainingTime, featherTime);
+        _cometParticleRenderer.material = CometTrail;
+        _cometRenderer.sprite = Comet;
+
+        if (hero.controlReqlinquished)
+        {
+            _source.PlayOneShot(_renewFeather);
+            yield break;
+        }
+
+        gameObject.BroadcastEvent("OnActivate");
+
+        _heroBox.offset = new Vector2(0, -1);
+        _heroBox.size = new Vector2(0.5f, 0.5f);
+
+        StartCoroutine(StartSound());
+
+        _comet.SetActive(true);
+
+        var rb2d = hero.GetComponent<Rigidbody2D>();
+
+        _regainControl = true;
+        _show = true;
+
+        _comet.transform.position = transform.position;
+        _cometBody.velocity = rb2d.velocity / 3;
+        _cometValid = true;
+
+        hero.GetComponent<MeshRenderer>().enabled = false;
+        hero.RelinquishControl();
+
+        var up = InputHandler.Instance.inputActions.up;
+        var down = InputHandler.Instance.inputActions.down;
+        var left = InputHandler.Instance.inputActions.left;
+        var right = InputHandler.Instance.inputActions.right;
+
+        var dashed = false;
+
+        while (_remainingTime > 0)
+        {
+            if (_cometValid && rb2d.gravityScale == 0)
+            {
+                _regainControl = false;
+                _show = false;
+                _cometValid = false;
+            }
+
+            if (!_cometValid) break;
+
+            _remainingTime -= Time.deltaTime;
+
+            var target = new Vector2();
+            if (up.IsPressed) target.y += 25;
+            if (down.IsPressed) target.y -= 25;
+            var rightP = right.IsPressed;
+            var leftP = left.IsPressed;
+            if (rightP != leftP)
+            {
+                if (rightP)
+                {
+                    hero.FaceRight();
+                    target.x += 25;
+                }
+                else
+                {
+                    hero.FaceLeft();
+                    target.x -= 25;
+                }
+            }
+
+            rb2d.velocity = Vector2.zero;
+            hero.transform.position = _comet.transform.position + new Vector3(0, 1);
+            _cometBody.velocity = Vector2.Lerp(_cometBody.velocity, target, Time.deltaTime * 1.5f);
+
+            if (InputHandler.Instance.inputActions.dash.WasPressed)
+            {
+                dashed = true;
+                hero.SetStartWithDash();
+                break;
+            }
+
+            yield return null;
+        }
+
+        if (_regainControl) hero.RegainControl();
+        if (_show) hero.GetComponent<MeshRenderer>().enabled = true;
+
+        if (!dashed) hero.airDashed = false;
+        hero.doubleJumped = false;
+
+        _comet.SetActive(false);
+        _cometValid = false;
+
+        _source.Stop();
+        _source.PlayOneShot(_loseFeather);
+
+        _remainingTime = 0;
+
+        gameObject.BroadcastEvent("OnFinish");
+        ResetHitboxes();
     }
 
     private IEnumerator Respawn()

@@ -15,6 +15,12 @@ public static class BroadcasterHooks
             }
         );
 
+        On.EnemyBullet.Collision += (orig, self, normal, rotation) =>
+        {
+            self.gameObject.BroadcastEvent("OnHit");
+            return orig(self, normal, rotation);
+        };
+        
         On.Breakable.Break += (orig, self, min, max, multiplier) =>
         {
             orig(self, min, max, multiplier);

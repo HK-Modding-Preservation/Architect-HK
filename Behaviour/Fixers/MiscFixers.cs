@@ -6,7 +6,9 @@ using Architect.Behaviour.Custom;
 using Architect.Content.Preloads;
 using Architect.Events.Blocks.Operators;
 using GlobalEnums;
+using HutongGames.PlayMaker;
 using HutongGames.PlayMaker.Actions;
+using Satchel.Futils;
 using UnityEngine;
 
 namespace Architect.Behaviour.Fixers;
@@ -25,6 +27,13 @@ public static class MiscFixers
 
     public static void Init()
     {
+        // So custom persistent int items have data
+        On.PersistentIntItem.Awake += (orig, self) =>
+        {
+            self.persistentIntData ??= new PersistentIntData();
+            orig(self);
+        };
+        
         PreloadManager.RegisterPreload(new BasicPreload("Tutorial_01", "_Scenery/plat_float_01",
             o => { SpriteMaterial = o.GetComponent<SpriteRenderer>().material; }));
 
@@ -557,10 +566,10 @@ public static class MiscFixers
     {
         obj.transform.SetRotation2D(0);
         obj.AddComponent<PngObject>();
-        obj.AddComponent<ZoteHead>();
+        obj.AddComponent<Landable>();
     }
 
-    public class ZoteHead : TriggerActivator
+    public class Landable : TriggerActivator
     {
         private Collider2D _col2d;
         private bool _ground;
@@ -977,5 +986,61 @@ public static class MiscFixers
         {
             if (other.layer == 9) HeroController.instance.TakeDamage(null, 0, 1, 1);
         }
+    }
+
+    public class Lift : MonoBehaviour
+    {
+        public float speed = 8;
+        public bool startUp;
+        public float offset = 10;
+
+        private void Awake()
+        {
+            var fsm = gameObject.LocateMyFSM("Lift Control");
+            
+            fsm.GetState("Check Active").AddAction(() => fsm.SendEvent("ACTIVE"), 0);
+
+            var md = fsm.GetState("Move Down");
+            var mu = fsm.GetState("Move Up");
+            ((Translate)md.actions[6]).y = -speed;
+            ((Translate)mu.actions[5]).y = speed;
+            
+            fsm.GetState("Init").AddAction(() => fsm.SendEvent(startUp ? "START UP" : "START DOWN"), 13);
+            
+            fsm.GetState("Start Down").DisableAction(0);
+            ((SetPosition)fsm.GetState("Start Up").actions[0]).y = transform.GetPositionY() + offset;
+
+            ((FloatCompare)md.actions[8]).float2 = transform.GetPositionY();
+            ((FloatCompare)mu.actions[7]).float2 = transform.GetPositionY() + offset;
+            
+            ((SetPosition)fsm.GetState("Reached Bot").actions[4]).y = transform.GetPositionY();
+            ((SetPosition)fsm.GetState("Reached Top").actions[4]).y = transform.GetPositionY() + offset;
+            
+            fsm.GetState("Down").DisableAction(4);
+            fsm.GetState("Up").DisableAction(4);
+        }
+    }
+
+    public static void FixGeoRock(GameObject obj)
+    {
+        obj.RemoveComponent<GeoRock>();
+        
+        var fsm = obj.LocateMyFSM("Geo Rock");
+        fsm.fsmTemplate = null;
+        
+        fsm.GetState("Broken").AddAction(() => obj.BroadcastEvent("OnBreak"), 0);
+        fsm.GetState("Destroy").AddAction(() => obj.BroadcastEvent("OnBreak"), 0);
+        var hit = fsm.GetState("Hit");
+        hit.AddAction(() => obj.BroadcastEvent("OnHit"), 0);
+        
+        fsm.AddVariable<FsmInt>("Value");
+        obj.AddComponent<PersistentIntItem>();
+
+        var hits = fsm.FsmVariables.FindFsmInt("Hits");
+        var value = fsm.FsmVariables.FindFsmInt("Value");
+        
+        fsm.GetState("Pause Frame Init").AddAction(() => value.Value = hits.Value, 0);
+        fsm.GetState("Initiate").AddAction(() => hits.Value = value.Value, 0);
+        hit.AddAction(() => value.Value = hits.Value, 4);
     }
 }

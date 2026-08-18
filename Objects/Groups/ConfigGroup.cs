@@ -292,7 +292,12 @@ public static class ConfigGroup
             new FloatConfigType("Respawn Time", "feather_respawn_time", (o, value) =>
             {
                 o.GetComponent<Feather>().respawnTime = value.GetValue();
-            }).WithDefaultValue(6))
+            }).WithDefaultValue(6)),
+        ConfigurationManager.RegisterConfigType(
+            new ChoiceConfigType("Feather Type", "feather_mode", (o, value) =>
+            {
+                o.GetComponent<Feather>().legacy = value.GetValue() == 1;
+            }).WithOptions("Modern", "Legacy").WithDefaultValue(0))
     ]);
     
     public static readonly List<ConfigType> Bubble =  GroupUtils.Merge(Visible, [
@@ -702,6 +707,29 @@ public static class ConfigGroup
     public static readonly List<ConfigType> PersistentBreakable = GroupUtils.Merge(Visible, [
         ConfigurationManager.RegisterConfigType(MakePersistenceConfigType("Stay Broken", "breakable_stay"))
     ]);
+    
+    public static readonly List<ConfigType> GeoRock = GroupUtils.Merge(Visible, [
+        ConfigurationManager.RegisterConfigType(new BoolConfigType(
+            "Stay Broken", "geo_rock_stay_broken", (o, value) =>
+            {
+                if (!value.GetValue()) o.RemoveComponent<PersistentIntItem>();
+            }).WithDefaultValue(true)),
+        ConfigurationManager.RegisterConfigType(new IntConfigType(
+            "Hits To Break", "geo_rock_total_hits", (o, value) =>
+            {
+                o.LocateMyFSM("Geo Rock").FsmVariables.FindFsmInt("Hits").Value = value.GetValue();
+            })),
+        ConfigurationManager.RegisterConfigType(new IntConfigType(
+            "Geo Per Hit", "geo_rock_geo_per", (o, value) =>
+            {
+                o.LocateMyFSM("Geo Rock").FsmVariables.FindFsmInt("Geo Per Hit").Value = value.GetValue();
+            })),
+        ConfigurationManager.RegisterConfigType(new IntConfigType(
+            "Final Hit Geo", "geo_rock_geo_final", (o, value) =>
+            {
+                o.LocateMyFSM("Geo Rock").FsmVariables.FindFsmInt("Final Payout").Value = value.GetValue();
+            }))
+    ]);
 
     public static readonly List<ConfigType> Levers = GroupUtils.Merge(Visible, [
         ConfigurationManager.RegisterConfigType(MakePersistenceConfigType("Stay Pulled", "lever_stay"))
@@ -852,6 +880,12 @@ public static class ConfigGroup
                 if (!value.GetValue()) return;
                 o.AddComponent<Rigidbody2D>().collisionDetectionMode = CollisionDetectionMode2D.Continuous;
             }).WithDefaultValue(false)),
+        ConfigurationManager.RegisterConfigType(new IntConfigType("Trigger Layer (Physics)", "shape_activator_layer",
+            (o, value) =>
+            {
+                o.GetComponent<MiscFixers.TriggerActivator>().layer = value.GetValue();
+            }
+        )),
         ConfigurationManager.RegisterConfigType(
             new FloatConfigType("Gravity Scale (Physics)", "coloured_shapes_gravity_scale", (o, value) =>
             {
@@ -1502,6 +1536,27 @@ public static class ConfigGroup
                     var friendly = o.LocateMyFSM("Control").GetState("Friendly?");
                     for (var i = 2; i <= 7; i++) friendly.DisableAction(i);
                 }).WithDefaultValue(false))
+    ]);
+
+    public static readonly List<ConfigType> MinesLift = GroupUtils.Merge(Visible, [
+        ConfigurationManager.RegisterConfigType(
+            new FloatConfigType("Speed", "mines_lift_speed",
+                (o, value) =>
+                {
+                    o.GetComponent<MiscFixers.Lift>().speed = value.GetValue();
+                }).WithDefaultValue(8).WithPriority(-1)),
+        ConfigurationManager.RegisterConfigType(
+            new BoolConfigType("Start Up", "mines_lift_start_up",
+                (o, value) =>
+                {
+                    o.GetComponent<MiscFixers.Lift>().startUp = value.GetValue();
+                }).WithDefaultValue(false).WithPriority(-1)),
+        ConfigurationManager.RegisterConfigType(
+            new FloatConfigType("Up Offset", "mines_lift_up_offset",
+                (o, value) =>
+                {
+                    o.GetComponent<MiscFixers.Lift>().offset = value.GetValue();
+                }).WithDefaultValue(10).WithPriority(-1))
     ]);
 
     public static readonly List<ConfigType> Shade = GroupUtils.Merge(Visible, [

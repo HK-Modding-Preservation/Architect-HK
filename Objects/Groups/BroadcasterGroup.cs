@@ -14,6 +14,8 @@ public static class BroadcasterGroup
     
     public static readonly List<string> ZoteHead = ["OnHit", "OnAir", "OnLand"];
     
+    public static readonly List<string> Landable = ["OnAir", "OnLand"];
+    
     public static readonly List<string> Transitions = ["OnExit"];
     
     public static readonly List<string> Npcs = ["OnFinish"];
@@ -53,6 +55,8 @@ public static class BroadcasterGroup
     public static readonly List<string> Item = ["BeforePickup"];
     
     public static readonly List<string> Hittable = ["OnHit"];
+    
+    public static readonly List<string> GeoRock = ["OnHit", "OnBreak"];
     
     public static readonly List<string> AbilityCrystal = ["OnCollect", "OnRegen"];
     
