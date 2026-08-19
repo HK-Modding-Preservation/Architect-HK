@@ -1116,4 +1116,27 @@ public static class EnemyFixers
         };
         bc.exit = exit.transform;
     }
+
+    public static void FixFlamebearer(GameObject obj, int level)
+    {
+        obj.LocateMyFSM("hp_scaler").enabled = false;
+        var fsm = obj.LocateMyFSM("Control");
+        fsm.fsmTemplate = null;
+        
+        fsm.GetState("Init").AddAction(() =>
+        {
+            fsm.FsmVariables.FindFsmInt("Grimmchild Level").Value = level;
+            fsm.SendEvent("START");
+        });
+        
+        fsm.GetState("Fanfare Level").AddAction(() => fsm.SendEvent("FINISHED"), 0);
+        var destroy = fsm.GetState("Destroy");
+        destroy.DisableAction(0);
+        destroy.AddAction(() =>
+        {
+            obj.GetComponent<HealthManager>().SetIsDead(true);
+            var pbi = obj.GetComponent<PersistentBoolItem>();
+            if (pbi) pbi.SaveState();
+        }, 0);
+    }
 }

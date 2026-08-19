@@ -29,6 +29,7 @@ public static class VanillaObjects
         AddGroundsObjects();
         AddBasinObjects();
         AddDreamObjects();
+        AddGrimmObjects();
         AddWpObjects();
         AddAbyssObjects();
         AddSoulObjects();
@@ -962,6 +963,29 @@ public static class VanillaObjects
 
         AddSolid("Godhome Platform 1", "gg_plat_1", ("GG_Atrium_Roof", "gg_plat_float_small"));
         AddSolid("Godhome Platform 2", "gg_plat_2", ("GG_Workshop", "gg_plat_float_wide"));
+    }
+
+    private static void AddGrimmObjects()
+    {
+        AddFlamebearerEnemy("Grimmkin Novice", "grimmkin_novice", "Ruins1_28", 1);
+        AddFlamebearerEnemy("Grimmkin Master", "grimmkin_master", "Tutorial_01", 2);
+        AddFlamebearerEnemy("Grimmkin Nightmare", "grimmkin_nightmare", "Fungus2_30", 3);
+        
+        return;
+
+        void AddFlamebearerEnemy(string name, string id, string scene, int level)
+        {
+            Categories.Enemies.Add(new PreloadObject(name, id, (scene, "Flamebearer Spawn"),
+                    postSpawnAction: o => EnemyFixers.FixFlamebearer(o, level),
+                    extraction: ExtractFlamebearer)
+                .WithReceiverGroup(ReceiverGroup.Enemies)
+                .WithBroadcasterGroup(BroadcasterGroup.Enemies)
+                .WithConfigGroup(ConfigGroup.Enemies)
+                .WithOutputGroup(OutputGroup.Enemies));
+        }
+
+        GameObject ExtractFlamebearer(GameObject o) =>
+            o.LocateMyFSM("Spawn Control").FsmVariables.FindFsmGameObject("Grimmkin Obj").Value;
     }
 
     private static void AddAbyssObjects()

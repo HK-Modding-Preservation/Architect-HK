@@ -356,7 +356,7 @@ public static class MiscObjects
         var lr = line.AddComponent<LineRenderer>();
         lr.material = LineMaterial;
 
-        var collider = line.AddComponent<EdgeCollider2D>();
+        var collider = line.AddComponent<PolygonCollider2D>();
         collider.isTrigger = true;
 
         return new CustomObject("Coloured Line Point", "coloured_line", line, 
