@@ -42,6 +42,13 @@ public static class EditManager
         }
     }
 
+    // Config open when not paused
+    public static bool ConfigOpen;
+    // Mouse is in config editing zone
+    private static bool EditingConfig =>
+        ConfigOpen &&
+        (Input.mousePosition.x < Screen.width * 0.35f || Input.mousePosition.x > Screen.width * 0.85f);
+
     public static bool ShowLayersByDefault = true;
     public static readonly List<int> FlippedLayers = [];
 
@@ -141,7 +148,7 @@ public static class EditManager
     public static bool ShouldShowCursor()
     {
         return GameManager.instance.isPaused ||
-            (IsEditing && CurrentObject is not PlaceableObject);
+            (IsEditing && CurrentObject is not PlaceableObject) || ConfigOpen;
     }
 
     public static void Init()
@@ -163,6 +170,7 @@ public static class EditManager
         typeof(QuitToMenu).Hook("Start", (Func<QuitToMenu, IEnumerator> orig, QuitToMenu self) =>
             {
                 IsEditing = false;
+                ConfigOpen = false;
                 return orig(self); 
             });
         
@@ -240,7 +248,7 @@ public static class EditManager
         var paused = GameManager.instance.isPaused;
         var actions = InputHandler.Instance.inputActions;
         
-        if (!paused && (!HeroController.instance.controlReqlinquished || IgnoreControlRelinquished) &&
+        if (!EditingConfig && !paused && (!HeroController.instance.controlReqlinquished || IgnoreControlRelinquished) &&
             !LoadPos && !HeroController.instance.cState.dead &&
             HeroController.instance.transitionState == HeroTransitionState.WAITING_TO_TRANSITION
             && !HeroController.instance.transform.parent)
@@ -256,6 +264,11 @@ public static class EditManager
         
         if (!IsEditing) return;
 
+        if (Input.GetKeyDown(KeyCode.K) && !EditingConfig)
+        {
+            ConfigOpen = !ConfigOpen;
+        }
+
         if (paused)
         {
             var left = actions.left.WasPressed;
@@ -267,7 +280,9 @@ public static class EditManager
         
         HeroController.instance.ResetHardLandingTimer();
 
-        if (!paused)
+        if (EditingConfig) return;
+
+        if (!paused && !ConfigOpen)
         {
             var hotbarIndex = -1;
             if (Input.GetKeyDown(KeyCode.Alpha1)) hotbarIndex = 0;
@@ -524,6 +539,7 @@ public static class EditManager
                      .SelectMany(o => o.GetComponentsInChildren<TransitionPoint>())) 
             o.gameObject.SetActive(false);
         IsEditing = !IsEditing;
+        ConfigOpen = false;
 
         InvulBlock.Invulnerable = false;
 
@@ -593,7 +609,7 @@ public static class EditManager
         var right = actions.right.IsPressed;
 
         var speed = actions.dash.IsPressed ? 35 : 20;
-        if (!LoadPos)
+        if (!LoadPos && !EditingConfig)
         {
             if (!paused && up != down) NoclipPos += (up ? Vector3.up : Vector3.down) * (Time.deltaTime * speed);
             if (!paused && left != right) NoclipPos += (left ? Vector3.left : Vector3.right) * (Time.deltaTime * speed);

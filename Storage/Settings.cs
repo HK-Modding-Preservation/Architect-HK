@@ -16,6 +16,7 @@ public static class Settings
     public static Keybind ScaleUp;
     public static Keybind ScaleDown;
     public static Keybind NextHotbar;
+    public static Keybind OpenConfig;
     public static Keybind SaveObject;
     public static Keybind LockAxis;
     public static Keybind Undo;
@@ -117,6 +118,13 @@ public static class Settings
             "NextHotbar",
             Key.Tab,
             "Moves to the next saved hotbar"
+        ));
+        
+        OpenConfig = new Keybind(Bind(
+            "Keybinds",
+            "OpenConfig",
+            Key.K,
+            "Opens the config when the game is not paused"
         ));
         
         SaveObject = new Keybind(Bind(
