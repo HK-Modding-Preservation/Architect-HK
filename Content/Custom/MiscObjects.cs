@@ -18,6 +18,7 @@ public static class MiscObjects
         Categories.Misc.AddStart(CreateLine());
         Categories.Misc.AddStart(CreateTriangle());
         Categories.Misc.AddStart(CreateCircle());
+        Categories.Misc.AddStart(CreatePerfectCircle());
         Categories.Misc.AddStart(CreateSquare());
         
         Categories.Effects.AddStart(CreateAudioObject());
@@ -298,8 +299,6 @@ public static class MiscObjects
     private static PlaceableObject CreateSquare()
     {
         var square = CreateShape("square");
-        
-        square.AddComponent<MiscFixers.Landable>();
 
         var collider = square.AddComponent<BoxCollider2D>();
         collider.isTrigger = true;
@@ -308,16 +307,13 @@ public static class MiscObjects
         return new CustomObject("Coloured Square", "coloured_square", square, 
                 "A square that can be coloured or given a hitbox for custom collision.\n\n" +
                 "RGBA colour values should be between 0 and 1.")
-            .WithConfigGroup(ConfigGroup.ColouredShapes)
-            .WithBroadcasterGroup(BroadcasterGroup.Landable)
+            .WithConfigGroup(ConfigGroup.StretchableColouredShapes)
             .WithRotationGroup(RotationGroup.All);
     }
 
     private static PlaceableObject CreateCircle()
     {
         var circle = CreateShape("circle");
-        
-        circle.AddComponent<MiscFixers.Landable>();
 
         var collider = circle.AddComponent<PolygonCollider2D>();
         collider.isTrigger = true;
@@ -337,8 +333,22 @@ public static class MiscObjects
         return new CustomObject("Coloured Circle", "coloured_circle", circle, 
                 "A circle that can be coloured or given a hitbox for custom collision." +
                 "\n\nRGBA colour values should be between 0 and 1.")
+            .WithConfigGroup(ConfigGroup.StretchableColouredShapes)
+            .WithRotationGroup(RotationGroup.All);
+    }
+
+    private static PlaceableObject CreatePerfectCircle()
+    {
+        var circle = CreateShape("perfect_circle");
+
+        var collider = circle.AddComponent<CircleCollider2D>();
+        collider.isTrigger = true;
+
+        return new CustomObject("Perfect Coloured Circle", "perfect_coloured_circle", circle, 
+                "A circle that can be coloured or given a hitbox for custom collision.\n" +
+                "Perfectly round, unlike the standard circle, but cannot be stretched." +
+                "\n\nRGBA colour values should be between 0 and 1.")
             .WithConfigGroup(ConfigGroup.ColouredShapes)
-            .WithBroadcasterGroup(BroadcasterGroup.Landable)
             .WithRotationGroup(RotationGroup.All);
     }
     
@@ -356,7 +366,7 @@ public static class MiscObjects
         var lr = line.AddComponent<LineRenderer>();
         lr.material = LineMaterial;
 
-        var collider = line.AddComponent<PolygonCollider2D>();
+        var collider = line.AddComponent<EdgeCollider2D>();
         collider.isTrigger = true;
 
         return new CustomObject("Coloured Line Point", "coloured_line", line, 
@@ -376,7 +386,7 @@ public static class MiscObjects
 
         triangle.AddComponent<MiscFixers.Landable>();
         
-        var collider = triangle.AddComponent<EdgeCollider2D>();
+        var collider = triangle.AddComponent<PolygonCollider2D>();
         collider.isTrigger = true;
         collider.points =
         [
@@ -389,7 +399,7 @@ public static class MiscObjects
         return new CustomObject("Coloured Triangle", "coloured_triangle", triangle, 
                 "A triangle that can be coloured or given a hitbox for custom collision." +
                 "\n\nRGBA colour values should be between 0 and 1.")
-            .WithConfigGroup(ConfigGroup.ColouredShapes)
+            .WithConfigGroup(ConfigGroup.StretchableColouredShapes)
             .WithBroadcasterGroup(BroadcasterGroup.Landable)
             .WithRotationGroup(RotationGroup.All);
     }

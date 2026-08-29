@@ -1287,7 +1287,7 @@ public static class VanillaObjects
             .WithBroadcasterGroup(BroadcasterGroup.GeoRock));
         
         Categories.Effects.Add(new PreloadObject("Blur Plane", "blur_plane",
-                    ("Tutorial_01", "BlurPlane"), 
+                    ("Tutorial_01", "BlurPlane (1)"), 
                     sprite: ResourceUtils.LoadSpriteResource("blur", ppu: 37.75f),
                     description: "Having multiple blur planes together can cause issues.\n" +
                                  "It is recommended to disable the vanilla BlurPlane when using a custom one.\n\n" +

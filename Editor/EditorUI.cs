@@ -92,6 +92,12 @@ public static class EditorUI
         RefreshItem();
     }
 
+    public static void DisplayHotbarText(string text)
+    {
+        ObjectIdLabel.textComponent.text = text;
+        ArchitectPlugin.Instance.StartCoroutine(CursorObject.ClearCursorInfoLabel());
+    }
+
     private static void SetupCanvas()
     {
         _canvasObj = new GameObject("[Architect] Editor Canvas");
@@ -254,7 +260,7 @@ public static class EditorUI
             });
         }
         
-        SetupLegacy(LayoutManager.LegacyMode, LayoutManager.UIMode == 1, LayoutManager.UIMode == 0, true);
+        SetupLegacy(LayoutManager.LegacyMode);
     }
 
     private static void SetupObjects()
@@ -425,7 +431,7 @@ public static class EditorUI
         toolImg.sprite = obj.GetUISprite();
     }
 
-    private static (bool, bool, bool) _prevLegacy = (false, false, false);
+    private static (bool, int) _prevLegacy = (false, -1);
 
     public static void RefreshVisibility(bool editing, bool paused)
     {
@@ -442,7 +448,7 @@ public static class EditorUI
 
             if (paused)
             {
-                SetupLegacy(LayoutManager.LegacyMode, LayoutManager.UIMode == 1, LayoutManager.UIMode == 0, false);
+                SetupLegacy(LayoutManager.LegacyMode);
                 ScriptEditorUI.UpdateColour();
 
                 _mapUI.SetActive(CurrentType == EditorType.Map);
@@ -466,10 +472,10 @@ public static class EditorUI
         }
     }
 
-    private static void SetupLegacy(bool legacy, bool hideModern, bool rightCategories, bool force)
+    private static void SetupLegacy(bool legacy)
     {
-        if (_prevLegacy == (legacy, hideModern, rightCategories) && !force) return;
-        _prevLegacy = (legacy, hideModern, rightCategories);
+        if (_prevLegacy == (legacy, LayoutManager.UIMode)) return;
+        _prevLegacy = (legacy, LayoutManager.UIMode);
         
         _legacyCategory.Item2.gameObject.SetActive(legacy);
         _legacyCategory.Item1.gameObject.SetActive(legacy);
@@ -477,11 +483,12 @@ public static class EditorUI
         _configTypeButtons.SetActive(legacy);
         _editorTypeButtons.SetActive(!legacy);
 
+        var hideModern = LayoutManager.UIMode == 1;
         _modern.SetActive(!hideModern);
         _prefabsCategory.Item1.gameObject.SetActive(!hideModern);
         _prefabsCategory.Item2.gameObject.SetActive(!hideModern);
 
-        if (rightCategories)
+        if (LayoutManager.UIMode == 0)
         {
             _categories.RemoveOffset();
             _universalOptions.RemoveOffset();
@@ -923,9 +930,21 @@ public static class EditorUI
 
     public static void RefreshItem()
     {
-        var icon = HotbarIcons[EditManager.HotbarIndex];
-        icon.sprite = EditManager.CurrentObject.GetUISprite();
-        var cfg = EditManager.Config.Values.FirstOrDefault(c => c.GetTypeId() == "png_url");
+        RefreshItem(EditManager.HotbarIndex);
+        
+        _currentlySelected.textComponent.text = EditManager.CurrentObject.GetName();
+        _currentlySelectedDesc.textComponent.text = EditManager.CurrentObject.GetDescription();
+
+        ScaleText.enabled = !(EditManager.CurrentObject?.DisableTransformations ?? true);
+        ZText.enabled = !(EditManager.CurrentObject?.DisableTransformations ?? true);
+        RotationText.enabled = !(EditManager.CurrentObject?.DisableTransformations ?? true);
+    }
+
+    public static void RefreshItem(int index)
+    {
+        var icon = HotbarIcons[index];
+        icon.sprite = EditManager.HotbarCurrentObject[index].GetUISprite();
+        var cfg = EditManager.HotbarConfig[index].Values.FirstOrDefault(c => c.GetTypeId() == "png_url");
         if (cfg != null)
         {
             CustomAssetManager.DoLoadSprite(cfg.SerializeValue(), true, 100, 1, 1, sprites =>
@@ -938,7 +957,7 @@ public static class EditorUI
         icon.transform.SetScaleX(1.25f);
         icon.transform.SetScaleY(1.25f);
 
-        if (EditManager.CurrentObject is PlaceableObject placeable)
+        if (EditManager.HotbarCurrentObject[index] is PlaceableObject placeable)
         {
             switch (placeable.GetUISprite().packingRotation)
             {
@@ -958,13 +977,6 @@ public static class EditorUI
         else icon.transform.localScale = new Vector3(1, 1, 1);
 
         icon.transform.SetRotationZ(rot);
-        
-        _currentlySelected.textComponent.text = EditManager.CurrentObject.GetName();
-        _currentlySelectedDesc.textComponent.text = EditManager.CurrentObject.GetDescription();
-
-        ScaleText.enabled = !(EditManager.CurrentObject?.DisableTransformations ?? true);
-        ZText.enabled = !(EditManager.CurrentObject?.DisableTransformations ?? true);
-        RotationText.enabled = !(EditManager.CurrentObject?.DisableTransformations ?? true);
     }
 
     private static int _refreshRoutineId;

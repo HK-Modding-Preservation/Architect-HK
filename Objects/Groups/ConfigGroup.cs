@@ -16,7 +16,6 @@ using Architect.Storage;
 using GlobalEnums;
 using HutongGames.PlayMaker.Actions;
 using MonoMod.RuntimeDetour;
-using Satchel.Futils.Serialiser;
 using UnityEngine;
 using UnityEngine.Video;
 using FsmEvent = HutongGames.PlayMaker.FsmEvent;
@@ -44,6 +43,50 @@ public static class ConfigGroup
             }).WithDefaultValue(false))
     ]);
     
+    public static readonly List<ConfigType> CameraLock = GroupUtils.Merge(Generic,
+    [
+        ConfigurationManager.RegisterConfigType(
+            new Vector2ConfigType("Collider Size", "camera_lock_box_size", (o, value) =>
+            {
+                o.GetComponent<CustomCameraLock>().boxZone = value.GetValue();
+            }, (o, value, _) =>
+            {
+                var ccl = o.GetComponentInChildren<CustomCameraLock>(true);
+                ccl.boxZone = value.GetValue();
+                ccl.Setup();
+            }).WithDefaultValue(new Vector2(12, 12))),
+        ConfigurationManager.RegisterConfigType(
+            new Vector2ConfigType("Collider Offset", "camera_lock_box_offset", (o, value) =>
+            {
+                o.GetComponent<CustomCameraLock>().boxOffset = value.GetValue();
+            }, (o, value, _) =>
+            {
+                var ccl = o.GetComponentInChildren<CustomCameraLock>(true);
+                ccl.boxOffset = value.GetValue();
+                ccl.Setup();
+            }).WithDefaultValue(Vector2.zero)),
+        ConfigurationManager.RegisterConfigType(
+            new Vector2ConfigType("Lock Size", "camera_lock_lock_size", (o, value) =>
+            {
+                o.GetComponent<CustomCameraLock>().lockZone = value.GetValue();
+            }, (o, value, _) =>
+            {
+                var ccl = o.GetComponentInChildren<CustomCameraLock>(true);
+                ccl.lockZone = value.GetValue();
+                ccl.Setup();
+            }).WithDefaultValue(new Vector2(10, 10))),
+        ConfigurationManager.RegisterConfigType(
+            new Vector2ConfigType("Lock Offset", "camera_lock_lock_offset", (o, value) =>
+            {
+                o.GetComponent<CustomCameraLock>().lockOffset = value.GetValue();
+            }, (o, value, _) =>
+            {
+                var ccl = o.GetComponentInChildren<CustomCameraLock>(true);
+                ccl.lockOffset = value.GetValue();
+                ccl.Setup();
+            }).WithDefaultValue(Vector2.zero))
+    ]);
+    
     public static readonly List<ConfigType> DisableEnemy = GroupUtils.Merge(Disabler,
     [
         ConfigurationManager.RegisterConfigType(
@@ -52,6 +95,46 @@ public static class ConfigGroup
                 if (value.GetValue()) o.GetComponent<ObjectRemover>().shade = true;
             }).WithDefaultValue(false))
     ]);
+    
+    public static readonly List<ConfigType> GradeMarker = 
+    [
+        ConfigurationManager.RegisterConfigType(
+            new ColourConfigType("Ambient Light", "grade_marker_ambient", (o, value) =>
+            {
+                o.GetComponent<GradeMarker>().ambientColor = value.GetValue();
+            }, false).WithDefaultValue(Color.white)),
+        ConfigurationManager.RegisterConfigType(
+            new FloatConfigType("Ambient Intensity", "grade_marker_ambient_intensity", (o, value) =>
+            {
+                o.GetComponent<GradeMarker>().ambientIntensity = value.GetValue();
+            }).WithDefaultValue(1)),
+        ConfigurationManager.RegisterConfigType(
+            new ColourConfigType("Hero Light", "grade_marker_hero", (o, value) =>
+            {
+                o.GetComponent<GradeMarker>().heroLightColor = value.GetValue();
+            }, true).WithDefaultValue(Color.white)),
+        ConfigurationManager.RegisterConfigType(
+            new FloatConfigType("Saturation", "grade_marker_saturation", (o, value) =>
+            {
+                o.GetComponent<GradeMarker>().saturation = value.GetValue();
+            }).WithDefaultValue(1)),
+        ConfigurationManager.RegisterConfigType(
+            new FloatConfigType("Cutoff Radius", "grade_marker_cutoff", (o, value) =>
+            {
+                var gm = o.GetComponent<GradeMarker>();
+                gm.cutoffRadius = value.GetValue();
+            }).WithDefaultValue(1000)),
+        ConfigurationManager.RegisterConfigType(
+            new FloatConfigType("Max Intensity Radius", "grade_marker_max_intensity", (o, value) =>
+            {
+                o.GetComponent<GradeMarker>().maxIntensityRadius = value.GetValue();
+            }).WithDefaultValue(0)),
+        ConfigurationManager.RegisterConfigType(
+            new BoolConfigType("Start Active", "grade_marker_start", (o, value) =>
+            {
+                o.GetComponent<GradeMarker>().enableGrade = value.GetValue();
+            }).WithDefaultValue(true))
+    ];
     
     public static readonly List<ConfigType> Prefab = GroupUtils.Merge(Generic,
     [
@@ -866,12 +949,11 @@ public static class ConfigGroup
             color.a = value.GetValue();
             sr.color = color;
         }).WithDefaultValue(1));
-    public static readonly List<ConfigType> ColouredShapes = GroupUtils.Merge(Stretchable, GroupUtils.Merge(Colliders, [
+    public static readonly List<ConfigType> ColouredShapes = GroupUtils.Merge(Colliders, [
         ConfigurationManager.RegisterConfigType(
             new ColourConfigType("Colour", "sprite_colour", (o, value) =>
             {
                 var col = value.GetValue();
-                if (o.GetComponent<MiscFixers.AlphaClamp>()) col.a = Mathf.Max(col.a, 0.1f);
                 o.GetComponent<SpriteRenderer>().color = col;
             }, true).WithDefaultValue(Color.white)),
         ConfigurationManager.RegisterConfigType(
@@ -880,12 +962,6 @@ public static class ConfigGroup
                 if (!value.GetValue()) return;
                 o.AddComponent<Rigidbody2D>().collisionDetectionMode = CollisionDetectionMode2D.Continuous;
             }).WithDefaultValue(false)),
-        ConfigurationManager.RegisterConfigType(new IntConfigType("Trigger Layer (Physics)", "shape_activator_layer",
-            (o, value) =>
-            {
-                o.GetComponent<MiscFixers.TriggerActivator>().layer = value.GetValue();
-            }
-        )),
         ConfigurationManager.RegisterConfigType(
             new FloatConfigType("Gravity Scale (Physics)", "coloured_shapes_gravity_scale", (o, value) =>
             {
@@ -908,7 +984,10 @@ public static class ConfigGroup
                 if (!rb2d.sharedMaterial) rb2d.sharedMaterial = new PhysicsMaterial2D();
                 rb2d.sharedMaterial.friction = value.GetValue();
             }).WithPriority(2))
-    ]));
+    ]);
+    
+    public static readonly List<ConfigType> StretchableColouredShapes = 
+        GroupUtils.Merge(Stretchable, GroupUtils.Merge(ColouredShapes, []));
     
     public static readonly List<ConfigType> Line = GroupUtils.Merge(Colliders, [
         ConfigurationManager.RegisterConfigType(

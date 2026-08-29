@@ -22,7 +22,7 @@ public class GameplayBlock : ScriptBlock
 {
     protected override string Name => "Gameplay Control";
 
-    protected override IEnumerable<string> Inputs => ["SetGravity"];
+    protected override IEnumerable<string> Inputs => ["SetGravity", "Save", "SaveQuit", "CloseGame"];
 
     protected override IEnumerable<(string, string)> InputVars =>
     [
@@ -38,7 +38,21 @@ public class GameplayBlock : ScriptBlock
 
     protected override void Trigger(string trigger)
     {
-        Physics2D.gravity = new Vector2(GetVariable<float>("GravX"), GetVariable<float>("GravY", -60));
+        switch (trigger)
+        {
+            case "SetGravity":
+                Physics2D.gravity = new Vector2(GetVariable<float>("GravX"), GetVariable<float>("GravY", -60));
+                break;
+            case "Save":
+                GameManager.instance.SaveGame(_ => Event("OnSave"));
+                break;
+            case "SaveQuit":
+                GameManager.instance.StartCoroutine(GameManager.instance.ReturnToMainMenu(GameManager.ReturnToMainMenuSaveModes.SaveAndContinueOnFail));
+                break;
+            case "CloseGame":
+                Application.Quit();
+                break;
+        }
     }
 
     public override object GetValue(string id)

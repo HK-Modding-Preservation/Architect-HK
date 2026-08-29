@@ -28,7 +28,7 @@ public class ComponentHook : PreviewableBehaviour
         }
         
         _components = (recursive ?
-            target.GetComponentsInChildren<UnityEngine.Behaviour>() : 
+            target.GetComponentsInChildren<UnityEngine.Component>() : 
             target.GetComponents<UnityEngine.Component>()).Where(c => c.GetType().Name == componentName)
             .ToArray();
         

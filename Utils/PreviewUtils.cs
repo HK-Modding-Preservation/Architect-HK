@@ -119,6 +119,7 @@ public static class PreviewUtils
             
             gameObject.RemoveComponentsInChildren<SpawnJarControl>();
             gameObject.RemoveComponentsInChildren<PersistentBoolItem>();
+            gameObject.RemoveComponentsInChildren<SetZ>();
             gameObject.RemoveComponentsInChildren<FSMActivator>();
             gameObject.RemoveComponentsInChildren<PersistentIntItem>();
             gameObject.RemoveComponentsInChildren<HealthManager>();
