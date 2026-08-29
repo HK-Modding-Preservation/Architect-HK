@@ -15,6 +15,7 @@ public static class Settings
     public static Keybind Flip;
     public static Keybind ScaleUp;
     public static Keybind ScaleDown;
+    public static Keybind NextHotbar;
     public static Keybind SaveObject;
     public static Keybind LockAxis;
     public static Keybind Undo;
@@ -109,6 +110,13 @@ public static class Settings
             "ScaleDown",
             Key.Minus,
             "Decreases the scale of the object on the cursor"
+        ));
+        
+        NextHotbar = new Keybind(Bind(
+            "Keybinds",
+            "NextHotbar",
+            Key.Tab,
+            "Moves to the next saved hotbar"
         ));
         
         SaveObject = new Keybind(Bind(

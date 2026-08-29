@@ -50,7 +50,8 @@ public static class EditManager
     private static float _lastEditToggle;
 
     private static int _hotbarIndex;
-
+    private static int _loadedHotbar = -1; 
+        
     public static int HotbarIndex
     {
         get => _hotbarIndex;
@@ -284,12 +285,12 @@ public static class EditManager
                 if (Input.GetKey(KeyCode.LeftAlt))
                 {
                     ArchitectPlugin.Instance.StartCoroutine(StorageManager.LoadHotbar(hotbarIndex));
-                    EditorUI.DisplayHotbarText($"Loaded hotbar {hotbarIndex+1}");
+                    EditorUI.DisplayHotbarText($"Loaded hotbar {hotbarIndex + 1}");
                 }
                 else if (Input.GetKey(KeyCode.LeftControl))
                 {
                     StorageManager.SaveHotbar(hotbarIndex);
-                    EditorUI.DisplayHotbarText($"Saved hotbar {hotbarIndex+1}");
+                    EditorUI.DisplayHotbarText($"Saved hotbar {hotbarIndex + 1}");
                 }
                 else HotbarIndex = hotbarIndex;
 
@@ -297,6 +298,15 @@ public static class EditManager
                 {
                     if (keybind.WasPressed) EditorUI.SetItem(index);
                 }
+            }
+            else if (Settings.NextHotbar.WasPressed)
+            {
+                if (Input.GetKey(KeyCode.LeftShift)) _loadedHotbar--;
+                else _loadedHotbar++;
+                if (_loadedHotbar >= 9) _loadedHotbar = 0;
+                if (_loadedHotbar < 0) _loadedHotbar = 8;
+                ArchitectPlugin.Instance.StartCoroutine(StorageManager.LoadHotbar(_loadedHotbar));
+                EditorUI.DisplayHotbarText($"Loaded hotbar {_loadedHotbar+1}");
             }
         }
 
