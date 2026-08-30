@@ -197,6 +197,20 @@ public class ArchitectPlugin : Mod,
         {
             if (dir == Path.Combine(modsPath, "Architect")) continue;
 
+            var parent = dir;
+            var disabled = false;
+            while (!parent.EndsWith("Mods"))
+            {
+                parent = Directory.GetParent(parent)?.FullName;
+                if (parent == null || parent.EndsWith("Disabled"))
+                {
+                    disabled = true;
+                    break;
+                }
+            }
+
+            if (disabled) continue;
+
             var scenes = Path.Combine(dir, "Scenes");
             if (Directory.Exists(scenes)) foreach (var path in Directory.GetFiles(scenes))
             {
