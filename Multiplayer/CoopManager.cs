@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using Architect.Multiplayer.Hkmp;
 using Architect.Placements;
 using UnityEngine;
+using Settings = Architect.Storage.Settings;
 
 namespace Architect.Multiplayer;
 
@@ -11,8 +12,11 @@ public abstract class CoopManager
     
     public static void Init()
     {
+        Instance = new DummyManager();
+
+        if (!Settings.CoopMode.Value) return;
+        
         if (ModHooks.GetMod("HKMP") is Mod) HkmpManagerInitializer.Init();
-        else Instance = new DummyManager();
     }
 
     public abstract string Name { get; }

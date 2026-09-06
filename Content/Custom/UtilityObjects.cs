@@ -42,7 +42,7 @@ public static class UtilityObjects
         Categories.Utility.Add(CreateComponentToggler());
 
         Categories.Utility.Add(new PreloadObject("Grade Marker", "grade_marker",
-                ("Tutorial_01", "GradeMarker (1)"),
+                ("Tutorial_01", "_Markers/GradeMarker"),
                 sprite: ResourceUtils.LoadSpriteResource("grade_marker"))
             .WithConfigGroup(ConfigGroup.GradeMarker)
             .WithReceiverGroup(ReceiverGroup.GradeMarker));

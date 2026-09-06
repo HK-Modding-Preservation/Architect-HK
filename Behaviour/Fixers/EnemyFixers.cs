@@ -757,6 +757,7 @@ public static class EnemyFixers
             {
                 ((SetHP)fsm.GetState("Friendly Idle").actions[1]).hp = hp;
                 ((SetHP)init.actions[10]).hp = hp;
+                GetComponent<HealthManager>().hp = hp;
             }
             
             init.AddAction(() =>

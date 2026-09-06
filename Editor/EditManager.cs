@@ -264,7 +264,7 @@ public static class EditManager
         
         if (!IsEditing) return;
 
-        if (Settings.OpenConfig.WasPressed && !EditingConfig)
+        if (Settings.OpenConfig.WasPressed && !EditingConfig && !paused)
         {
             ConfigOpen = !ConfigOpen;
         }

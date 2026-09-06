@@ -11,12 +11,22 @@ public static class FsmUtils
 {
     public static FsmState AddState(this PlayMakerFSM fsm, string state)
     {
-        return SFCore.Utils.FsmUtil.AddState(fsm, state);
+        return FsmUtil.AddState(fsm, state);
     }
     
     public static FsmState GetState(this PlayMakerFSM fsm, string state)
     {
         return fsm.Fsm.GetState(state);
+    }
+    
+    public static T[] GetActionsOfType<T>(this FsmState state) where T : FsmStateAction
+    {
+        return FsmUtil.GetActionsOfType<T>(state);
+    }
+
+    public static void ChangeTransition(this FsmState state, string eve, string toState)
+    {
+        FsmUtil.ChangeTransition(state, eve, toState);
     }
     
     public static void DisableAction(this FsmState state, int index)

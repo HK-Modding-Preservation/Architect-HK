@@ -48,6 +48,7 @@ public static class Settings
     public static ConfigEntry<bool> HitboxesInEditor;
     public static ConfigEntry<bool> ShowRespawnPoint;
     public static ConfigEntry<bool> BlockInventoryInEditMode;
+    public static ConfigEntry<bool> CoopMode;
     
     public static ConfigEntry<int> SaveSlot; 
     
@@ -307,6 +308,13 @@ public static class Settings
             "BlockInventoryInEditMode",
             true,
             "Prevents the inventory from being opened during edit mode"
+        );
+        
+        CoopMode = Bind(
+            "Options",
+            "CoopMode",
+            true,
+            "Hook into HKMP if present for co-op editing (requires a restart to toggle)"
         );
         
         SaveSlot = Bind(

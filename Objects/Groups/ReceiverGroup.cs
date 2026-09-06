@@ -36,6 +36,17 @@ public static class ReceiverGroup
         }))
     ]);
     
+    public static readonly List<EventReceiverType> Splash = GroupUtils.Merge(Generic, [
+        EventManager.RegisterReceiverType(new EventReceiverType("do_splash_small", "Splash", o =>
+        {
+            o.GetComponent<PlayMakerFSM>().SendEvent("NORMAL");
+        })),
+        EventManager.RegisterReceiverType(new EventReceiverType("do_splash_big", "SplashBig", o =>
+        {
+            o.GetComponent<PlayMakerFSM>().SendEvent("BIG");
+        }))
+    ]);
+    
     public static readonly List<EventReceiverType> Bumpers = GroupUtils.Merge(Generic, [
         EventManager.RegisterReceiverType(new EventReceiverType("bouncer_evil", "SetFire", o =>
         {

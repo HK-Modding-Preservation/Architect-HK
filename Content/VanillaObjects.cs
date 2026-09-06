@@ -394,6 +394,41 @@ public static class VanillaObjects
             .WithConfigGroup(ConfigGroup.BounceShroom)
             .WithBroadcasterGroup(BroadcasterGroup.BounceShroom));
         
+        Categories.Effects.Add(new PreloadObject("Splash Effect", "splash_effect",
+                ("Ruins1_03", "Surface Water Region"),
+                postSpawnAction: o =>
+                {
+                    o.transform.DisableChild(0);
+                    o.transform.DisableChild(1);
+                    o.transform.DisableChild(2);
+                    o.RemoveComponent<BoxCollider2D>();
+                    var fsm = o.LocateMyFSM("Surface Water Region");
+                    var bs = fsm.GetState("Big Splash?");
+                    bs.DisableActions(0, 1, 2, 3);
+                    
+                    fsm.fsm.startState = "Blue";
+                    
+                    fsm.GetState("Blue").ChangeTransition("FINISHED", "Big Splash?");
+                    
+                    var sin = fsm.GetState("Splash In Norm");
+                    sin.ChangeTransition("FINISHED", "Big Splash?");
+                    sin.DisableAction(0);
+                    var sib = fsm.GetState("Splash In Big");
+                    sib.ChangeTransition("FINISHED", "Big Splash?");
+                    sib.DisableActions(0, 1);
+
+                    foreach (var a in sin.GetActionsOfType<FlingObjectsFromGlobalPool>())
+                        a.spawnPoint = o;
+                    foreach (var a in sin.GetActionsOfType<SpawnObjectFromGlobalPool>())
+                        a.spawnPoint = o;
+                    foreach (var a in sib.GetActionsOfType<FlingObjectsFromGlobalPool>())
+                        a.spawnPoint = o;
+                    foreach (var a in sib.GetActionsOfType<SpawnObjectFromGlobalPool>())
+                        a.spawnPoint = o;
+                },
+                sprite: ResourceUtils.LoadSpriteResource("splash", FilterMode.Point, ppu: 32))
+            .WithReceiverGroup(ReceiverGroup.Splash));
+        
         Categories.Platforming.Add(new PreloadObject("Water Area", "water_area",
                 ("Ruins1_03", "Surface Water Region"),
                 sprite: ResourceUtils.LoadSpriteResource("water", FilterMode.Point, ppu: 25.6f),
