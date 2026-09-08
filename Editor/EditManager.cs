@@ -169,6 +169,13 @@ public static class EditManager
         
         typeof(QuitToMenu).Hook("Start", (Func<QuitToMenu, IEnumerator> orig, QuitToMenu self) =>
             {
+                if (IsEditing)
+                {
+                    StorageManager.SaveScene(GameManager.instance.sceneName, PlacementManager.GetLevelData());
+                    StorageManager.SaveScene(StorageManager.GLOBAL, PlacementManager.GetGlobalData());
+                    StorageManager.SaveWorkshopData();
+                }
+
                 IsEditing = false;
                 ConfigOpen = false;
                 return orig(self); 
@@ -525,6 +532,7 @@ public static class EditManager
         if (IsEditing == target) return;
         if (!PreloadManager.HasPreloaded) return;
         if (PrefabManager.InPrefabScene) return;
+        if (GameManager.instance.sceneName.EndsWith("_Title")) return;
         if (Time.time - _lastEditToggle < 1) return;
 
         IgnoreControlRelinquished = false;

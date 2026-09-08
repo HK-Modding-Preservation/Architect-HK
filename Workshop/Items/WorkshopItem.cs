@@ -14,6 +14,8 @@ public abstract class WorkshopItem
 
     public string Type;
 
+    public virtual string LoadScene => null;
+
     public List<ConfigType>[] Config;
     
     public Dictionary<string, ConfigValue> CurrentConfig;

@@ -105,8 +105,6 @@ public static class PreviewUtils
                 }
             }
 
-            foreach (var fsm in gameObject.GetComponentsInChildren<PlayMakerFSM>(true)) 
-                fsm.enabled = false;
             foreach (var aso in gameObject.GetComponentsInChildren<AudioSource>(true)) 
                 aso.enabled = false;
             foreach (var pb in GetComponentsInChildren<PreviewableBehaviour>(true)) 
@@ -117,20 +115,18 @@ public static class PreviewUtils
                 Destroy(tsa);
             }
             
+            gameObject.WipeBehaviour();
+            
             gameObject.RemoveComponentsInChildren<SpawnJarControl>();
-            gameObject.RemoveComponentsInChildren<PersistentBoolItem>();
             gameObject.RemoveComponentsInChildren<SetZ>();
             gameObject.RemoveComponentsInChildren<FSMActivator>();
-            gameObject.RemoveComponentsInChildren<PersistentIntItem>();
             gameObject.RemoveComponentsInChildren<HealthManager>();
             gameObject.RemoveComponentsInChildren<IHitResponder>();
             gameObject.RemoveComponentsInChildren<JellyEgg>();
             gameObject.RemoveComponentsInChildren<tk2dSpriteAnimator>();
             gameObject.RemoveComponentsInChildren<PlayFromRandomFrameMecanim>();
             gameObject.RemoveComponentsInChildren<Animator>();
-            gameObject.RemoveComponentsInChildren<EnemyBullet>();
             gameObject.RemoveComponentsInChildren<Climber>();
-            gameObject.RemoveComponentsInChildren<Walker>();
             gameObject.RemoveComponentsInChildren<BigCentipedeSection>();
             gameObject.RemoveComponentsInChildren<BigCentipede>();
             gameObject.RemoveComponentsInChildren<Crawler>();

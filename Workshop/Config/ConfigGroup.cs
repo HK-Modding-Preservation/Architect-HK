@@ -326,4 +326,21 @@ public static class ConfigGroup
             })
         )
     ];
+    
+    public static readonly List<ConfigType> MenuStyle =
+    [
+        ConfigurationManager.RegisterConfigType(
+            new StringConfigType<CustomMenuStyle>("Name", "menu_style_name", (item, value) =>
+            {
+                item.Name = value.GetValue();
+            })
+        ),
+        (NoteConfigType) "The style is unlocked when this universal variable is true (if set)",
+        ConfigurationManager.RegisterConfigType(
+            new StringConfigType<CustomMenuStyle>("Required Variable", "menu_style_var", (item, value) =>
+            {
+                item.RequiredBool = value.GetValue();
+            })
+        )
+    ];
 }

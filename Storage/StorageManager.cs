@@ -211,6 +211,7 @@ public static class StorageManager
     
     public static void SaveWorkshopData()
     {
+        if (WorkshopManager.WorkshopData == null) return;
         var path = Path.Combine(DataPath, "workshop.json");
         if (File.Exists(path)) File.Delete(path);
         

@@ -40,6 +40,8 @@ public class GlobalArchitectData
     public Dictionary<int, string> SaveSlotGroups = [];
     
     public Dictionary<string, string> ConfigData = [];
+
+    public string MenuStyle = string.Empty;
     
     [JsonConverter(typeof(PlayerActionSetConverter))]
     public Settings.ArchitectBinds Binds = new();

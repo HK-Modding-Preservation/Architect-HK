@@ -21,6 +21,7 @@ using Architect.Sharer;
 using Architect.Storage;
 using Architect.Updater;
 using Architect.Workshop;
+using Architect.Workshop.Items;
 using ItemChanger;
 using Newtonsoft.Json;
 using Satchel;
@@ -178,6 +179,7 @@ public class ArchitectPlugin : Mod,
         WorkshopManager.Setup();
         FavouritesCategory.Favourites = StorageManager.LoadFavourites();
         SavedCategory.Objects = StorageManager.LoadSavedObjects();
+        CustomMenuStyle.SetStyle();
     }
 
     private Manager _manager;

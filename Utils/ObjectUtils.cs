@@ -14,6 +14,19 @@ public static class ObjectUtils
         return comp ? comp : obj.AddComponent<T>();
     }
     
+    public static void WipeBehaviour(this GameObject obj)
+    {
+        foreach (var fsm in obj.GetComponentsInChildren<PlayMakerFSM>(true)) 
+            fsm.enabled = false;
+        
+        obj.RemoveComponentsInChildren<PersistentBoolItem>();
+        obj.RemoveComponentsInChildren<PersistentIntItem>();
+        obj.RemoveComponentsInChildren<FSMActivator>();
+        obj.RemoveComponentsInChildren<IHitResponder>();
+        obj.RemoveComponentsInChildren<EnemyBullet>();
+        obj.RemoveComponentsInChildren<Walker>();
+    }
+    
     public static void RemoveComponent<T>(this GameObject obj) where T : Component
     {
         var comp = obj.GetComponents<T>();

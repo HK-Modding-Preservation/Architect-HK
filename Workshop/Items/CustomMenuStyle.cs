@@ -1,0 +1,227 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using Architect.Behaviour.Utility;
+using Architect.Content.Preloads;
+using Architect.Placements;
+using Architect.Storage;
+using Architect.Utils;
+using BepInEx;
+using MonoMod.RuntimeDetour;
+using UnityEngine;
+using UnityEngine.SceneManagement;
+using Object = UnityEngine.Object;
+
+namespace Architect.Workshop.Items;
+
+public class CustomMenuStyle : WorkshopItem
+{
+    private static readonly Sprite Icon = ResourceUtils.LoadSpriteResource("custom_title");
+    private static readonly List<CustomMenuStyle> Styles = [];
+    
+    private static readonly Dictionary<MenuStyles.MenuStyle, CustomMenuStyle> StyleLookup = [];
+    private static readonly Dictionary<string, CustomMenuStyle> IdLookup = [];
+    
+    private static MenuStyles _ms;
+    private static bool _msStarted;
+    private GameObject _parent;
+
+    public string Name = string.Empty;
+
+    public string RequiredBool = string.Empty;
+
+    public static GameObject Title;
+    public override string LoadScene => $"{Id}_Title";
+    
+    public static void Init()
+    {
+        PreloadManager.RegisterPreload(new BasicPreload("Menu_Title", "LogoTitle",
+            o =>
+            {
+                Title = Object.Instantiate(o);
+                Title.name = "Title Reference";
+                Title.SetActive(false);
+                Object.DontDestroyOnLoad(Title);
+
+                var camLock = new GameObject("Cam Lock")
+                {
+                    transform =
+                    {
+                        parent = Title.transform,
+                        position = new Vector3(14.6f, 8.3f, -38.1f)
+                    }
+                };
+                camLock.AddComponent<CameraBorder>().type = 4;
+            }));
+        
+        typeof(MenuStyles).Hook(nameof(MenuStyles.Awake),
+            (Action<MenuStyles> orig, MenuStyles self) =>
+            {
+                _msStarted = false;
+                _ms = self;
+        
+                foreach (var style in Styles.ToArray())
+                {
+                    style.Unregister();
+                    style.Register();
+                }
+                
+                orig(self);
+            });
+        
+        typeof(MenuStyles).Hook(nameof(MenuStyles.Start),
+            (Action<MenuStyles> orig, MenuStyles self) =>
+            {
+                _msStarted = true;
+                orig(self);
+            });
+        
+        typeof(MenuStyles).Hook(nameof(MenuStyles.LoadStyle),
+            (Action<MenuStyles, bool, bool> orig, MenuStyles self, bool fade, bool force) =>
+            {
+                if (!GlobalArchitectData.Instance.MenuStyle.IsNullOrWhiteSpace())
+                {
+                    if (PreloadManager.HasPreloaded) SetStyle();
+                    return;
+                }
+                orig(self, fade, force);
+            });
+        
+        typeof(MenuStyles).Hook(nameof(MenuStyles.SetStyle),
+            (Action<MenuStyles, int, bool, bool> orig, MenuStyles self, int index, bool fade, bool save) =>
+            {
+                orig(self, index, fade, save);
+                
+                if (!PreloadManager.HasPreloaded) return;
+                GlobalArchitectData.Instance.MenuStyle =
+                    StyleLookup.TryGetValue(self.styles[index], out var custom) ? custom.Id : string.Empty;
+            });
+
+        _ = new Hook(typeof(MenuStyles.MenuStyle).GetProperty(nameof(MenuStyles.MenuStyle.IsAvailable))!.GetGetMethod(),
+            (Func<MenuStyles.MenuStyle, bool> orig, MenuStyles.MenuStyle self) =>
+            {
+                if (!StyleLookup.TryGetValue(self, out var custom)) return orig(self);
+                return custom.RequiredBool.IsNullOrWhiteSpace() || 
+                       GlobalArchitectData.Instance.BoolVariables.GetValueOrDefault(custom.RequiredBool);
+            });
+    }
+
+    private MenuStyles.MenuStyle _style;
+    private LoadSceneContents _lsc;
+    private CustomScene _customScene;
+    
+    public override void Register()
+    {
+        Styles.Add(this);
+
+        if (_ms)
+        {
+
+            _parent = new GameObject(Id)
+            {
+                transform =
+                {
+                    parent = _ms.transform,
+                    localPosition = new Vector3(-5f, -7.8454f, 3.5469f)
+                }
+            };
+            _parent.SetActive(false);
+
+            _lsc = _parent.AddComponent<LoadSceneContents>();
+            _lsc.id = Id;
+
+            _style = new MenuStyles.MenuStyle
+            {
+                displayName = $"ArchitectMod_{Name}",
+                styleObject = _parent,
+                cameraColorCorrection = new MenuStyles.MenuStyle.CameraCurves()
+            };
+
+
+            var styles = _ms.styles.ToList();
+            styles.Add(_style);
+            _ms.styles = styles.ToArray();
+            StyleLookup[_style] = this;
+        }
+
+        _customScene = new CustomScene
+        {
+            Id = $"{Id}_Title",
+            Group = "Titles",
+            TilemapWidth = 0,
+            TilemapHeight = 0
+        };
+        _customScene.Register();
+
+        IdLookup[Id] = this;
+    }
+
+    public override void Unregister()
+    {
+        Styles.Remove(this);
+        
+        if (_parent) Object.Destroy(_parent);
+        
+        var styles = _ms.styles.ToList();
+        styles.Remove(_style);
+        _ms.styles = styles.ToArray();
+        
+        if (_style != null) StyleLookup.Remove(_style);
+        IdLookup.Remove(Id);
+
+        _customScene?.Unregister();
+    }
+
+    public override Sprite GetIcon()
+    {
+        return Icon;
+    }
+
+    public class LoadSceneContents : MonoBehaviour
+    {
+        public string id;
+        private Scene _scene;
+        
+        public void OnEnable()
+        {
+            if (!_msStarted) return;
+            _scene = UnityEngine.SceneManagement.SceneManager.CreateScene($"{id}_title");
+
+            var ld = StorageManager.LoadScene($"{id}_title");
+            foreach (var placement in ld.Placements)
+            {
+                var obj = placement.SpawnObject();
+                obj.WipeBehaviour();
+
+                if (obj)
+                {
+                    UnityEngine.SceneManagement.SceneManager.MoveGameObjectToScene(obj, _scene);
+                    PlacementManager.Objects[placement.GetId()] = obj;
+                    PlacementManager.OnPlace?.Invoke(placement.GetPlacementType().GetId(), placement.GetId(), obj);
+                }
+            }
+
+            foreach (var block in ld.ScriptBlocks) block.Setup(false);
+            foreach (var block in ld.ScriptBlocks) block.LateSetup();
+        }
+
+        private void OnDisable()
+        {
+            if (_scene.IsValid()) UnityEngine.SceneManagement.SceneManager.UnloadSceneAsync(_scene);
+        }
+    }
+
+    public static void SetStyle()
+    {
+        if (!IdLookup.TryGetValue(GlobalArchitectData.Instance.MenuStyle, out var style)) return;
+
+        for (var i = 0; i < _ms.styles.Length; i++)
+        {
+            if (_ms.styles[i] == style._style)
+            {
+                _ms.SetStyle(i, false);
+                break;
+            }
+        }
+    }
+}

@@ -48,6 +48,11 @@ public static class WorkshopManager
         Register<CustomCue>("Audio Cue",
             new Vector2(-300, -300),
             ConfigGroup.Cue);
+        
+        CustomMenuStyle.Init();
+        Register<CustomMenuStyle>("Menu Style",
+            new Vector2(-300, -337.5f),
+            ConfigGroup.MenuStyle);
     }
 
     private static readonly List<WorkshopData> ExtWorkshops = [];
