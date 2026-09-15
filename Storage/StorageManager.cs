@@ -595,12 +595,9 @@ public static class StorageManager
     // Ensure everything for the current map is loaded
     public static void LateLoad()
     {
-        if (!Settings.UseMapiPreloads.Value)
-        {
-            FindLoadRequirements();
-            PreloadManager.HasPreloaded = false;
-            PreloadManager.DoPreload(false);
-        }
+        FindLoadRequirements();
+        PreloadManager.HasPreloaded = false;
+        PreloadManager.DoPreload(false);
     }
 
     public static void SaveApiKey([CanBeNull] string key)

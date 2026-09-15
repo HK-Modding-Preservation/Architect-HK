@@ -115,13 +115,6 @@ public class ArchitectPlugin : Mod,
         {
             Log("Error porting DcM map");
         }
-
-        if (Settings.UseMapiPreloads.Value) return PreloadManager.ToPreload.SelectMany(kvp =>
-        {
-            List<(string, string)> s = [];
-            foreach (var (val, _) in kvp.Value) s.Add((kvp.Key, val));
-            return s;
-        }).Distinct().ToList();
         
         return [("Crossroads_47", "RestBench")];
     }
@@ -142,25 +135,7 @@ public class ArchitectPlugin : Mod,
             Log("Could not load external maps");
         }
         
-        if (Settings.UseMapiPreloads.Value)
-        {
-            foreach (var (scene, items) in PreloadManager.ToPreload)
-            {
-                foreach (var (path, preload) in items)
-                {
-                    preload.MarkLoaded();
-                    if (preloadedObjects[scene].TryGetValue(path, out var obj))
-                    {
-                        Object.DontDestroyOnLoad(obj);
-                        preload.OnPreload(obj);
-                    }
-                    else preload.OnPreload(null);
-                }
-            }
-
-            PreloadManager.HasPreloaded = true;
-            PreloadingDone();
-        } else PreloadManager.DoPreload(true);
+        PreloadManager.DoPreload(true);
         
         SharerManager.Init();
         EditorUI.SetupCategories();
