@@ -1,5 +1,7 @@
+using System.Collections.Generic;
 using System.Linq;
 using Architect.Content.Preloads;
+using HutongGames.PlayMaker;
 using HutongGames.PlayMaker.Actions;
 using UnityEngine;
 using ApplyMusicCue = On.HutongGames.PlayMaker.Actions.ApplyMusicCue;
@@ -1087,12 +1089,37 @@ public static class EnemyFixers
     {
         var blasts = Object.Instantiate(_focusBlasts);
         blasts.name = obj.name + " Blasts";
+        blasts.SetActive(true);
+
+        List<FsmFloat> posLowMins = [];
+        List<FsmFloat> posLowMaxes = [];
+        List<FsmFloat> posHighMins = [];
+        List<FsmFloat> posHighMaxes = [];
+        List<(FsmFloat, FsmFloat)> xRanges = [];
+        var blastFsms = blasts.GetComponentsInChildren<PlayMakerFSM>();
+        foreach (var blastFsm in blastFsms)
+        {
+            var pl = blastFsm.GetState("Pos Low").GetAction<RandomFloat>(0);
+            posLowMins.Add(pl.min);
+            posLowMaxes.Add(pl.max);
+            
+            var ph = blastFsm.GetState("Pos High").GetAction<RandomFloat>(0);
+            posHighMins.Add(ph.min);
+            posHighMaxes.Add(ph.max);
+            
+            xRanges.Add((blastFsm.FsmVariables.FindFsmFloat("X Min"), blastFsm.FsmVariables.FindFsmFloat("X Max")));
+        }
         
         BlockMusicOn(obj);
         obj.RemoveComponent<ConstrainPosition>();
         
         var fsm = obj.LocateMyFSM("Control");
         fsm.fsmTemplate = null;
+        
+        fsm.GetState("Focus Burst").AddAction(() =>
+        {
+            foreach (var bfsm in blastFsms) bfsm.SendEvent("BLAST");
+        }, 0);
 
         var rb2d = obj.GetComponent<Rigidbody2D>();
         fsm.GetState("Idle Stance").AddAction(() => rb2d.bodyType = RigidbodyType2D.Dynamic, 0);
@@ -1172,6 +1199,11 @@ public static class EnemyFixers
             stunLandY.Value = y + 4.2f;
             tpDstabY.Value = y + 4.31f;
             tpDstabYMove.Value = y + 10.38f;
+
+            foreach (var plm in posLowMins) plm.Value = y + 2.88f;
+            foreach (var plm in posLowMaxes) plm.Value = y + 5.08f;
+            foreach (var phm in posHighMins) phm.Value = y + 6.88f;
+            foreach (var phm in posHighMaxes) phm.Value = y + 9.08f;
         }
 
         void AdjustX()
@@ -1190,6 +1222,15 @@ public static class EnemyFixers
             
             teleRangeMin2.Value = left + 8.5f;
             teleRangeMax2.Value = right - 8.5f;
+
+            var shift = (right - left - 3) / 6;
+            var leftPoint = left + 1.5f;
+            foreach (var (xMin, xMax) in xRanges)
+            {
+                xMin.Value = leftPoint - 1.5f;
+                xMax.Value = leftPoint + 1.5f;
+                leftPoint += shift;
+            } 
         }
     }
 
