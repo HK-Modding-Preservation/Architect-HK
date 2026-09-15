@@ -45,7 +45,7 @@ public static class StorageManager
             (Action<GameManager, Action<bool>> orig, GameManager self, Action<bool> callback) => 
             { 
                 SaveFavourites(FavouritesCategory.Favourites);
-                SavePrefabs(SavedCategory.Objects);
+                SaveSavedObjects(SavedCategory.Objects);
 
                 if (EditManager.IsEditing)
                 {
@@ -278,12 +278,13 @@ public static class StorageManager
         return [];
     }
 
-    public static void SavePrefabs(List<SavedObject> prefabs)
+    private static void SaveSavedObjects(List<SavedObject> prefabs)
     {
         var path = Path.Combine(DataPath, "prefabs.json");
         if (File.Exists(path)) File.Delete(path);
 
-        var data = SerializePlacements(prefabs.Select(obj => obj.Placement).ToList());
+        var data = SerializePlacements(prefabs.Where(p => p != null)
+            .Select(obj => obj.Placement).ToList());
 
         using var stream = File.Create(path);
         using var writer = new StreamWriter(stream);

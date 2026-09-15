@@ -1761,7 +1761,7 @@ public static class ConfigGroup
                 }).WithDefaultValue(true))
     ]);
 
-    public static readonly List<ConfigType> Thk = GroupUtils.Merge(Wakeable, [
+    public static readonly List<ConfigType> Thk = GroupUtils.Merge(Enemies, [
         ConfigurationManager.RegisterConfigType(
             new BoolConfigType("Phase Roar Stun", "thk_roar_stun",
                 (o, value) =>
@@ -1978,6 +1978,34 @@ public static class ConfigGroup
             {
                 o.LocateMyFSM("zap control").FsmVariables.FindFsmFloat("Wait Time").Value = value.GetValue();
             }).WithDefaultValue(0.8f))
+    ]);
+
+    public static readonly List<ConfigType> Lumafly = GroupUtils.Merge(Generic, [
+        ConfigurationManager.RegisterConfigType(
+            new FloatConfigType("Min Wait", "lumaflies_min_wait", (o, value) =>
+            {
+                ((IdleBuzz)o.LocateMyFSM("glow_bug").GetState("Idle").Actions[0]).waitMin = value.GetValue();
+            }).WithDefaultValue(0.75f)),
+        ConfigurationManager.RegisterConfigType(
+            new FloatConfigType("Max Wait", "lumaflies_max_wait", (o, value) =>
+            {
+                ((IdleBuzz)o.LocateMyFSM("glow_bug").GetState("Idle").Actions[0]).waitMax = value.GetValue();
+            }).WithDefaultValue(1)),
+        ConfigurationManager.RegisterConfigType(
+            new FloatConfigType("Max Acceleration", "lumaflies_max_accel", (o, value) =>
+            {
+                ((IdleBuzz)o.LocateMyFSM("glow_bug").GetState("Idle").Actions[0]).accelerationMax = value.GetValue();
+            }).WithDefaultValue(15)),
+        ConfigurationManager.RegisterConfigType(
+            new FloatConfigType("Max Speed", "lumaflies_max_speed", (o, value) =>
+            {
+                ((IdleBuzz)o.LocateMyFSM("glow_bug").GetState("Idle").Actions[0]).speedMax = value.GetValue();
+            }).WithDefaultValue(1.75f)),
+        ConfigurationManager.RegisterConfigType(
+            new FloatConfigType("Roaming Range", "lumaflies_roaming_range", (o, value) =>
+            {
+                ((IdleBuzz)o.LocateMyFSM("glow_bug").GetState("Idle").Actions[0]).roamingRange = value.GetValue();
+            }).WithDefaultValue(1))
     ]);
 
     public static readonly ConfigType PngUrl = ConfigurationManager.RegisterConfigType(

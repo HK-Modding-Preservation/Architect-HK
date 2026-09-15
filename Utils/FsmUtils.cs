@@ -18,6 +18,11 @@ public static class FsmUtils
     {
         return fsm.Fsm.GetState(state);
     }
+
+    public static T GetAction<T>(this FsmState state, int index) where T : FsmStateAction
+    {
+        return FsmUtil.GetAction<T>(state, index);
+    }
     
     public static T[] GetActionsOfType<T>(this FsmState state) where T : FsmStateAction
     {

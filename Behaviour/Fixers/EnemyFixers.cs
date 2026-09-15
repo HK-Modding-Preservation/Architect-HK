@@ -4,6 +4,7 @@ using HutongGames.PlayMaker.Actions;
 using UnityEngine;
 using ApplyMusicCue = On.HutongGames.PlayMaker.Actions.ApplyMusicCue;
 using Object = UnityEngine.Object;
+using Random = UnityEngine.Random;
 using TransitionToAudioSnapshot = On.HutongGames.PlayMaker.Actions.TransitionToAudioSnapshot;
 
 namespace Architect.Behaviour.Fixers;
@@ -24,6 +25,9 @@ public static class EnemyFixers
 
     // Flukemarm
     private static GameObject _flukeCage;
+    
+    // Pure Vessel
+    private static GameObject _focusBlasts;
 
     // Marmu
     private static ContactFilter2D _marmuFilter;
@@ -50,6 +54,9 @@ public static class EnemyFixers
 
         PreloadManager.RegisterPreload(new BasicPreload("GG_Flukemarm", "Hatcher Cage (2)",
             o => _flukeCage = o));
+
+        PreloadManager.RegisterPreload(new BasicPreload("GG_Hollow_Knight", "Battle Scene/Focus Blasts",
+            o => _focusBlasts = o));
 
         ApplyMusicCue.OnEnter += (orig, self) =>
         {
@@ -982,7 +989,223 @@ public static class EnemyFixers
         
         var fsm = obj.LocateMyFSM("Control");
         
+        var tpDstab = fsm.GetState("TelePos Dstab");
+
+        var stunLandY = fsm.FsmVariables.FindFsmFloat("Stun Land Y");
+        var puppetSlamY = fsm.FsmVariables.FindFsmFloat("PuppetSlam Y");
+        var plumeY = fsm.FsmVariables.FindFsmFloat("Plume Y");
+        var tpDstabY = tpDstab.GetAction<FloatCompare>(2).float2;
+        var tpDstabYMove = tpDstab.GetAction<SetPosition>(5).y;
+
+        var leftX = fsm.FsmVariables.FindFsmFloat("Left X");
+        var rightX = fsm.FsmVariables.FindFsmFloat("Right X");
+        
+        var teleRangeMin = fsm.FsmVariables.FindFsmFloat("TeleRange Min");
+        var teleRangeMax = fsm.FsmVariables.FindFsmFloat("TeleRange Max");
+
+        var tpDstabClamp = tpDstab.GetAction<FloatClamp>(4);
+        var teleRangeMin2 = tpDstabClamp.minValue;
+        var teleRangeMax2 = tpDstabClamp.maxValue;
+        
+        fsm.GetState("Stomp Land").DisableAction(0);
+        
+        fsm.GetState("Dstab Air").AddAction(AdjustY, 0);
+        fsm.GetState("ChestShot Fall").AddAction(AdjustY, 0);
+        fsm.GetState("Stun Air").AddAction(AdjustY, 0);
+        fsm.GetState("Puppet Down").AddAction(AdjustY, 0);
+        
+        fsm.GetState("TelePos Counter").AddAction(AdjustX, 0);
+        fsm.GetState("TelePos Slash").AddAction(AdjustX, 0);
+        fsm.GetState("TelePos Dash").AddAction(AdjustX, 0);
+        tpDstab.AddAction(AdjustX, 0);
+        fsm.GetState("TelePos SmallShot").AddAction(AdjustX, 0);
+        fsm.GetState("Aim Jump").AddAction(AdjustX, 0);
+
+        float left = 0;
+        float right = 0;
+
         fsm.GetState("Long Roar End").DisableAction(2);
+        
+        fsm.GetState("P4 Roar Position").AddAction(() => fsm.SendEvent("FINISHED"), 0);
+        fsm.GetState("Chest Shot Antic").DisableAction(2);
+
+        AdjustY();
+        AdjustX();
+
+        var corpse = obj.transform.Find("Boss Corpse").gameObject;
+        obj.GetComponent<EnemyDeathEffects>().corpse = corpse;
+        var corpseFsm = corpse.LocateMyFSM("Corpse");
+        
+        corpse.RemoveComponentsInChildren<CameraLockArea>();
+        corpseFsm.GetState("Init").DisableActions(6, 13, 14);
+        corpseFsm.GetState("Burst").DisableActions(0, 1);
+        var blow = corpseFsm.GetState("Blow");
+        blow.GetAction<SetFsmBool>(12).setValue = false;
+        blow.AddAction(() => corpse.SetActive(false));
+
+        corpse.GetComponent<Rigidbody2D>()
+            .constraints = RigidbodyConstraints2D.FreezePositionX | RigidbodyConstraints2D.FreezeRotation;
+        
+        BlockMusicOn(corpse);
+
+        obj.GetComponent<HealthManager>().hasSpecialDeath = false;
+
+        return;
+
+        void AdjustY()
+        {
+            var cast = Physics2D.Raycast(obj.transform.position, Vector2.down, 50, TerrainMask);
+            var y = cast ? cast.point.y : obj.transform.GetPositionY() - 30;
+            
+            plumeY.Value = y;
+            stunLandY.Value = y + 4;
+            puppetSlamY.Value = y + 2.3f;
+            tpDstabY.Value = y + 4.31f;
+            tpDstabYMove.Value = y + 10.38f;
+        }
+
+        void AdjustX()
+        {
+            var leftCast = Physics2D.Raycast(obj.transform.position, Vector2.left, 30, TerrainMask);
+            left = leftCast ? leftCast.point.x : obj.transform.GetPositionX() - 30;
+            
+            var rightCast = Physics2D.Raycast(obj.transform.position, Vector2.right, 30, TerrainMask);
+            right = rightCast ? rightCast.point.x : obj.transform.GetPositionX() + 30;
+
+            leftX.Value = left + 4;
+            rightX.Value = right - 4;
+
+            teleRangeMin.Value = left + 6.5f;
+            teleRangeMax.Value = right - 6.5f;
+            
+            teleRangeMin2.Value = left + 8.5f;
+            teleRangeMax2.Value = right - 8.5f;
+        }
+    }
+
+    public static void FixPv(GameObject obj)
+    {
+        var blasts = Object.Instantiate(_focusBlasts);
+        blasts.name = obj.name + " Blasts";
+        
+        BlockMusicOn(obj);
+        obj.RemoveComponent<ConstrainPosition>();
+        
+        var fsm = obj.LocateMyFSM("Control");
+        fsm.fsmTemplate = null;
+
+        var rb2d = obj.GetComponent<Rigidbody2D>();
+        fsm.GetState("Idle Stance").AddAction(() => rb2d.bodyType = RigidbodyType2D.Dynamic, 0);
+        fsm.GetState("Intro 1").GetAction<Wait>(0).time = 0;
+        
+        fsm.GetState("HUD Out").DisableAction(0);
+        fsm.GetState("Intro Roar").DisableActions(4, 5, 10);
+        
+        var tpDstab = fsm.GetState("TelePos Dstab");
+
+        var stunLandY = fsm.FsmVariables.FindFsmFloat("Stun Land Y");
+        var plumeY = fsm.FsmVariables.FindFsmFloat("Plume Y");
+        var tpDstabY = tpDstab.GetAction<FloatCompare>(2).float2;
+        var tpDstabYMove = tpDstab.GetAction<SetPosition>(5).y;
+
+        var leftX = fsm.FsmVariables.FindFsmFloat("Left X");
+        var rightX = fsm.FsmVariables.FindFsmFloat("Right X");
+        
+        var teleRangeMin = fsm.FsmVariables.FindFsmFloat("TeleRange Min");
+        var teleRangeMax = fsm.FsmVariables.FindFsmFloat("TeleRange Max");
+
+        var tpDstabClamp = tpDstab.GetAction<FloatClamp>(4);
+        var teleRangeMin2 = tpDstabClamp.minValue;
+        var teleRangeMax2 = tpDstabClamp.maxValue;
+
+        var sl = fsm.GetState("Stomp Land");
+        sl.DisableAction(0);
+        sl.AddAction(() => obj.transform.SetPositionY(stunLandY.Value - 1), 0);
+        
+        fsm.GetState("Dstab Air").AddAction(AdjustY, 0);
+        fsm.GetState("Stun Air").AddAction(AdjustY, 0);
+        
+        fsm.GetState("TelePos Counter").AddAction(AdjustX, 0);
+        fsm.GetState("TelePos Slash").AddAction(AdjustX, 0);
+        fsm.GetState("TelePos Dash").AddAction(AdjustX, 0);
+        tpDstab.AddAction(AdjustX, 0);
+        fsm.GetState("TelePos SmallShot").AddAction(AdjustX, 0);
+        fsm.GetState("Aim Jump").AddAction(AdjustX, 0);
+        
+        fsm.GetState("Pos Check").AddAction(() => fsm.SendEvent("FINISHED"), 1);
+
+        var plume = fsm.FsmVariables.FindFsmGameObject("Plume");
+        var pg = fsm.GetState("Plume Gen");
+        pg.AddAction(LockPlume, 4);
+        pg.AddAction(LockPlume, 1);
+
+        float left = 0;
+        float right = 0;
+
+        AdjustY();
+        AdjustX();
+
+        var ede = obj.GetComponent<EnemyDeathEffects>();
+        ede.PreInstantiate();
+        var corpse = ede.corpse;
+        var corpseFsm = corpse.LocateMyFSM("corpse");
+        
+        corpse.RemoveComponentsInChildren<CameraLockArea>();
+        
+        corpseFsm.GetState("Death Type").AddAction(() => corpseFsm.SendEvent("TIER 4"), 0);
+        corpseFsm.GetState("Music").DisableActions(3, 4);
+
+        return;
+        
+        void LockPlume()
+        {
+            var plumeObj = plume.Value;
+            plumeObj.AddComponent<SelfRemovingYLock>().y = plumeY.Value;
+        }
+
+        void AdjustY()
+        {
+            var cast = Physics2D.Raycast(obj.transform.position, Vector2.down, 50, TerrainMask);
+            var y = cast ? cast.point.y : obj.transform.GetPositionY() - 30;
+            
+            plumeY.Value = y - 0.8f;
+            stunLandY.Value = y + 4.2f;
+            tpDstabY.Value = y + 4.31f;
+            tpDstabYMove.Value = y + 10.38f;
+        }
+
+        void AdjustX()
+        {
+            var leftCast = Physics2D.Raycast(obj.transform.position, Vector2.left, 30, TerrainMask);
+            left = leftCast ? leftCast.point.x : obj.transform.GetPositionX() - 30;
+            
+            var rightCast = Physics2D.Raycast(obj.transform.position, Vector2.right, 30, TerrainMask);
+            right = rightCast ? rightCast.point.x : obj.transform.GetPositionX() + 30;
+
+            leftX.Value = left + 4;
+            rightX.Value = right - 4;
+
+            teleRangeMin.Value = left + 6.5f;
+            teleRangeMax.Value = right - 6.5f;
+            
+            teleRangeMin2.Value = left + 8.5f;
+            teleRangeMax2.Value = right - 8.5f;
+        }
+    }
+
+    private class SelfRemovingYLock : MonoBehaviour
+    {
+        public float y;
+
+        private void Update()
+        {
+            transform.SetPositionY(y);
+        }
+
+        private void OnDisable()
+        {
+            Destroy(this);
+        }
     }
 
     public static void FixHornetProtector(GameObject obj)
@@ -1139,5 +1362,73 @@ public static class EnemyFixers
             var pbi = obj.GetComponent<PersistentBoolItem>();
             if (pbi) pbi.SaveState();
         }, 0);
+    }
+    
+    private static readonly LayerMask TerrainMask = LayerMask.GetMask("Terrain");
+
+    public static void FixNosk(GameObject obj)
+    {
+        BlockMusicOn(obj);
+        
+        obj.transform.GetChild(1).gameObject.SetActive(true);
+        obj.GetComponent<MeshRenderer>().enabled = false;
+        
+        obj.LocateMyFSM("constrain_x").enabled = false;
+        
+        var fsm = obj.LocateMyFSM("Mimic Spider");
+        obj.AddComponent<Nosk>().fsm = fsm;
+
+        fsm.GetState("GG Pause").GetAction<Wait>(1).time = 0.001f;
+        
+        fsm.GetState("Trans 1").DisableActions(7, 8);
+        fsm.GetState("Roar Loop").DisableActions(2, 3);
+
+        var constraint = obj.AddComponent<ConstrainPosition>();
+
+        var jumpMinX = fsm.FsmVariables.FindFsmFloat("Jump Min X");
+        var jumpMaxX = fsm.FsmVariables.FindFsmFloat("Jump Max X");
+
+        var roofY = fsm.FsmVariables.FindFsmFloat("Roof Y");
+        fsm.GetState("Roof Jump?").AddAction(() =>
+        {
+            var cast = Physics2D.Raycast(obj.transform.position, Vector2.up, 30, TerrainMask);
+            if (!cast) fsm.SendEvent("FINISHED");
+            roofY.Value = cast.point.y - 2;
+            
+            UpdateConstraints();
+            constraint.constrainX = true;
+        }, 2);
+        
+        fsm.GetState("Land 2").AddAction(() =>
+        {
+            constraint.constrainX = false;
+            UpdateConstraints();
+        }, 0);
+        
+        fsm.GetState("Idle").AddAction(UpdateConstraints, 0);
+        
+        obj.transform.Find("Roof Dust").SetLocalPositionY(1.65f);
+
+        return;
+
+        void UpdateConstraints()
+        {
+            var leftCast = Physics2D.Raycast(obj.transform.position, Vector2.left, 30, TerrainMask);
+            constraint.xMin = jumpMinX.Value = leftCast ? leftCast.point.x + 1 : obj.transform.GetPositionX() - 30;
+            
+            var rightCast = Physics2D.Raycast(obj.transform.position, Vector2.right, 30, TerrainMask);
+            constraint.xMax = jumpMaxX.Value = rightCast ? rightCast.point.x - 1 : obj.transform.GetPositionX() + 30;
+        }
+    }
+
+    private class Nosk : Wakeable
+    {
+        public PlayMakerFSM fsm;
+        
+        public override void Wake()
+        {
+            fsm.GetState("Init").AddAction(() => fsm.SendEvent("GG BOSS"), 2);
+            fsm.SendEvent("TRANSFORM");
+        }
     }
 }

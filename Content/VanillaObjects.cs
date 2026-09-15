@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using Architect.Behaviour.Fixers;
 using Architect.Objects.Categories;
 using Architect.Objects.Groups;
@@ -111,6 +112,12 @@ public static class VanillaObjects
         Categories.Misc.Add(new PreloadObject("Lifeblood Cocoon", "lifeblood_cocoon",
                 ("Tutorial_01", "_Props/Health Cocoon"))
             .WithConfigGroup(ConfigGroup.Cocoon));
+
+        Categories.Misc.Add(new PreloadObject("Lifeseed", "lifeseed",
+                ("Tutorial_01", "_Props/Health Cocoon"),
+                extraction: o => 
+                    o.GetComponent<HealthCocoon>().flingPrefabs
+                        .First(prefab => prefab.prefab.name == "Health Scuttler").prefab));
 
         AddEnemy("Tiktik", "tiktik", ("Crossroads_07", "_Enemies/Climber 3"))
             .WithRotationGroup(RotationGroup.Four);
@@ -449,14 +456,14 @@ public static class VanillaObjects
             ("Deepnest_33", "Zombie Runner Sp (1)"));
         AddEnemy("Corpse Creeper (Husk Hornhead)", "corpse_creeper_b",
             ("Deepnest_33", "Zombie Hornhead Sp (2)"));
-        
+
         AddEnemy("Dirtcarver", "dirtcarver", ("Deepnest_17", "Baby Centipede")).SpritePreview = true;
         AddEnemy("Carver Hatcher", "carver_hatcher", ("Deepnest_26b", "Centipede Hatcher (4)"),
-            postSpawnAction: EnemyFixers.FixCarverHatcher)
+                postSpawnAction: EnemyFixers.FixCarverHatcher)
             .WithScaleAction(EnemyFixers.ScaleHatcher);
-        
+
         AddEnemy("Flukemarm", "flukemarm", ("GG_Flukemarm", "Fluke Mother"),
-            postSpawnAction: EnemyFixers.FixFlukemarm)
+                postSpawnAction: EnemyFixers.FixFlukemarm)
             .WithScaleAction(EnemyFixers.ScaleHatcher)
             .WithReceiverGroup(ReceiverGroup.Wakeable)
             .WithConfigGroup(ConfigGroup.Wakeable);
@@ -476,9 +483,9 @@ public static class VanillaObjects
         AddEnemy("Bluggsac", "bluggsac", ("Deepnest_Spider_Town", "Egg Sac"));
 
         Categories.Hazards.Add(new PreloadObject("Garpede", "garpede",
-            ("Deepnest_37", "Big Centipede (2)"),
-            preloadAction: EnemyFixers.FixGarpede,
-            postSpawnAction: EnemyFixers.PostFixGarpede)
+                ("Deepnest_37", "Big Centipede (2)"),
+                preloadAction: EnemyFixers.FixGarpede,
+                postSpawnAction: EnemyFixers.PostFixGarpede)
             .WithConfigGroup(ConfigGroup.Garpede)
             .WithFlipAction((o, f) =>
             {
@@ -489,8 +496,17 @@ public static class VanillaObjects
                 }
             })
             .WithRotationGroup(RotationGroup.Eight));
+
+        AddEnemy("Nosk", "nosk", ("GG_Nosk", "Mimic Spider"),
+                preloadAction: o =>
+                {
+                    o.transform.DisableChild(1);
+                    o.GetComponent<MeshRenderer>().enabled = true;
+                },
+                postSpawnAction: EnemyFixers.FixNosk)
+            .WithConfigGroup(ConfigGroup.Wakeable);
     }
-    
+
     private static void AddWaterwaysObjects()
     {
         AddEnemy("Hwurmp", "hwurmp", ("Waterways_01", "_Enemies/Inflater"));
@@ -929,7 +945,6 @@ public static class VanillaObjects
             ("White_Palace_03_hub", "White_ Spikes"))
             .WithRotationGroup(RotationGroup.Four));
 
-        // Used to not break old objects
         Categories.Hazards.Add(new PreloadObject("White Trap Spikes", "wp_trap_spikes",
             ("White_Palace_07", "wp_trap_spikes"))
             .WithRotationGroup(RotationGroup.Four)
@@ -1296,10 +1311,14 @@ public static class VanillaObjects
 
     private static void AddGodObjects()
     {
-        /*AddEnemy("The Hollow Knight", "hollow_knight",
+        AddEnemy("The Hollow Knight", "hollow_knight",
             ("Room_Final_Boss_Core", "Boss Control/Hollow Knight Boss"),
             postSpawnAction: EnemyFixers.FixThk)
-            .WithConfigGroup(ConfigGroup.Thk);*/
+            .WithConfigGroup(ConfigGroup.Thk);
+        
+        AddEnemy("Pure Vessel", "pure_vessel",
+            ("GG_Hollow_Knight", "Battle Scene/HK Prime"),
+            postSpawnAction: EnemyFixers.FixPv);
         
         Categories.Misc.Add(new PreloadObject("Standard Godhome Arena", "godhome_arena",
             ("GG_False_Knight", "GG_Arena_Prefab")));
@@ -1320,6 +1339,10 @@ public static class VanillaObjects
             postSpawnAction: MiscFixers.FixGeoRock)
             .WithConfigGroup(ConfigGroup.GeoRock)
             .WithBroadcasterGroup(BroadcasterGroup.GeoRock));
+
+        Categories.Effects.Add(new PreloadObject("Lumafly", "lumafly_effect",
+                ("Tutorial_01", "_Scenery/Glow Bug 1"))
+            .WithConfigGroup(ConfigGroup.Lumafly));
         
         Categories.Effects.Add(new PreloadObject("Blur Plane", "blur_plane",
                     ("Tutorial_01", "BlurPlane (1)"), 
