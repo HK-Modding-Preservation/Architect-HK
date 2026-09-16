@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using Architect.Behaviour.Utility;
 using Architect.Content.Preloads;
 using HutongGames.PlayMaker;
 using HutongGames.PlayMaker.Actions;
@@ -30,6 +31,18 @@ public static class EnemyFixers
     
     // Pure Vessel
     private static GameObject _focusBlasts;
+    
+    // Hornet 2
+    private static GameObject _barbRegion;
+    
+    // Crystal Guardian
+    private static GameObject _laserTurretMega1;
+    private static GameObject _laserTurretMega2;
+    
+    // Hive Knight
+    private static GameObject _swarmAudio;
+    private static GameObject _droppers;
+    private static GameObject _globs;
 
     // Marmu
     private static ContactFilter2D _marmuFilter;
@@ -59,6 +72,24 @@ public static class EnemyFixers
 
         PreloadManager.RegisterPreload(new BasicPreload("GG_Hollow_Knight", "Battle Scene/Focus Blasts",
             o => _focusBlasts = o));
+
+        PreloadManager.RegisterPreload(new BasicPreload("GG_Hornet_2", "Barb Region",
+            o => _barbRegion = o));
+
+        PreloadManager.RegisterPreload(new BasicPreload("GG_Crystal_Guardian", "Laser Turret Mega (1)",
+            o => _laserTurretMega1 = o));
+
+        PreloadManager.RegisterPreload(new BasicPreload("GG_Crystal_Guardian_2", "Laser Turret Mega (1)",
+            o => _laserTurretMega2 = o));
+
+        PreloadManager.RegisterPreload(new BasicPreload("GG_Hive_Knight", "Battle Scene/Globs",
+            o => _globs = o));
+
+        PreloadManager.RegisterPreload(new BasicPreload("GG_Hive_Knight", "Battle Scene/Droppers",
+            o => _droppers = o));
+
+        PreloadManager.RegisterPreload(new BasicPreload("GG_Hive_Knight", "Battle Scene/Swarm Audio",
+            o => _swarmAudio = o));
 
         ApplyMusicCue.OnEnter += (orig, self) =>
         {
@@ -1085,11 +1116,48 @@ public static class EnemyFixers
         }
     }
 
+    public class Pv : MonoBehaviour
+    {
+        public float xMin;
+        public float xMax;
+    }
+
+    public class ConstrainPv : PreviewableBehaviour
+    {
+        public Pv target;
+
+        private BoxCollider2D _bc2d;
+
+        private void Start()
+        {
+            _bc2d = GetComponent<BoxCollider2D>();
+        }
+
+        private void Update()
+        {
+            if (isAPreview) return;
+            if (!_bc2d.enabled) return;
+            
+            var minDiff = _bc2d.bounds.min.x - target.xMin;
+            if (minDiff < -0.8f) target.transform.SetPositionX(transform.GetPositionX() - minDiff);
+            
+            var maxDiff = target.xMax - _bc2d.bounds.max.x;
+            if (maxDiff < -0.8f) target.transform.SetPositionX(transform.GetPositionX() + maxDiff);
+        }
+    }
+
     public static void FixPv(GameObject obj)
     {
         var blasts = Object.Instantiate(_focusBlasts);
         blasts.name = obj.name + " Blasts";
         blasts.SetActive(true);
+
+        var pv = obj.AddComponent<Pv>();
+        obj.AddComponent<ConstrainPv>().target = pv;
+        foreach (var col2d in obj.transform.GetChild(0).GetComponentsInChildren<BoxCollider2D>(true))
+        {
+            col2d.gameObject.AddComponent<ConstrainPv>().target = pv;
+        }
 
         List<FsmFloat> posLowMins = [];
         List<FsmFloat> posLowMaxes = [];
@@ -1214,6 +1282,9 @@ public static class EnemyFixers
             var rightCast = Physics2D.Raycast(obj.transform.position, Vector2.right, 30, TerrainMask);
             right = rightCast ? rightCast.point.x : obj.transform.GetPositionX() + 30;
 
+            pv.xMin = left;
+            pv.xMax = right;
+
             leftX.Value = left + 4;
             rightX.Value = right - 4;
 
@@ -1249,10 +1320,134 @@ public static class EnemyFixers
         }
     }
 
+    public static void FixHornetSentinel(GameObject obj)
+    {
+        FixHornetProtector(obj);
+
+        var barbRegion = Object.Instantiate(_barbRegion);
+        barbRegion.name = obj.name + " Barbs";
+        barbRegion.SetActive(true);
+
+        var fsm = barbRegion.LocateMyFSM("Spawn Barbs");
+        
+        obj.LocateMyFSM("Control").GetState("Barb Throw").AddAction(() => fsm.SendEvent("SPAWN3"), 0);
+
+        var smix = fsm.FsmVariables.FindFsmFloat("Spawn Min X");
+        var smax = fsm.FsmVariables.FindFsmFloat("Spawn Max X");
+        var smiy = fsm.FsmVariables.FindFsmFloat("Spawn Min Y");
+        var smay = fsm.FsmVariables.FindFsmFloat("Spawn Max Y");
+
+        var constrain = obj.GetComponent<ConstrainHornet>();
+        fsm.GetState("Idle").AddAction(() =>
+        {
+            smix.Value = constrain.xMin + 1;
+            smax.Value = constrain.xMax - 1;
+            smiy.Value = constrain.yMin + 1;
+            smay.Value = constrain.yMax - 1;
+        }, 0);
+    }
+
     public static void FixHornetProtector(GameObject obj)
     {
+        BlockMusicOn(obj);
+
+        obj.RemoveComponent<ConstrainPosition>();
+        
         var fsm = obj.LocateMyFSM("Control");
-        fsm.GetState("Inert").AddAction(() => fsm.SendEvent("WAKE"), 0);
+        fsm.GetState("Inert").AddAction(() =>
+        {
+            fsm.SendEvent("WAKE");
+            fsm.SendEvent("BATTLE START");
+        }, 0);
+
+        var floorY = fsm.FsmVariables.FindFsmFloat("Floor Y");
+        var roofY = fsm.FsmVariables.FindFsmFloat("Roof Y");
+        var sphereY = fsm.FsmVariables.FindFsmFloat("Sphere Y");
+        
+        var leftX = fsm.FsmVariables.FindFsmFloat("Left X");
+        var rightX = fsm.FsmVariables.FindFsmFloat("Right X");
+        var throwXl = fsm.FsmVariables.FindFsmFloat("Throw X L");
+        var throwXr = fsm.FsmVariables.FindFsmFloat("Throw X R");
+        var wallXLeft = fsm.FsmVariables.FindFsmFloat("Wall X Left");
+        var wallXRight = fsm.FsmVariables.FindFsmFloat("Wall X Right");
+
+        var constrain = obj.AddComponent<ConstrainHornet>();
+
+        var adjustYEveryFrame = new FsmUtils.EveryFrameAction(AdjustY);
+        var aDash = fsm.GetState("A Dash");
+        aDash.AddAction(adjustYEveryFrame, 0);
+        fsm.GetState("In Air").AddAction(adjustYEveryFrame, 0);
+        
+        fsm.GetState("Aim Jump").AddAction(AdjustX, 0);
+        fsm.GetState("Aim Sphere Jump").AddAction(AdjustX, 0);
+        fsm.GetState("Can Throw?").AddAction(AdjustX, 0);
+        aDash.AddAction(AdjustX, 0);
+        
+        fsm.GetState("Set Scale")?.DisableAction(0);
+        
+        AdjustX();
+        AdjustY();
+
+        return;
+
+        void AdjustY()
+        {
+            var cast = Physics2D.Raycast(obj.transform.position + Vector3.up, Vector2.down, 30, TerrainMask);
+            var y = cast ? cast.point.y : obj.transform.GetPositionY() - 30;
+            
+            var castUp = Physics2D.Raycast(obj.transform.position + Vector3.up, Vector2.up, 30, TerrainMask);
+            var uy = castUp ? castUp.point.y : obj.transform.GetPositionY() + 30;
+
+            constrain.yMin = floorY.Value = y + 0.55f;
+            constrain.yMax = roofY.Value = uy - 1;
+            sphereY.Value = y + 6.8f;
+        }
+
+        void AdjustX()
+        {
+            var castLeft = Physics2D.Raycast(obj.transform.position, Vector2.left, 20, TerrainMask);
+            var left = castLeft ? castLeft.point.x : obj.transform.GetPositionX() - 30;
+            
+            var castRight = Physics2D.Raycast(obj.transform.position, Vector2.right, 20, TerrainMask);
+            var right = castRight ? castRight.point.x : obj.transform.GetPositionX() + 30;
+
+            leftX.Value = left + 1.5f;
+            throwXl.Value = left + 7.5f;
+            wallXLeft.Value = left + 0.1f;
+            
+            rightX.Value = right - 1.5f;
+            throwXr.Value = right - 7.5f;
+            wallXRight.Value = right - 0.1f;
+            
+            constrain.xMin = left;
+            constrain.xMax = right;
+        }
+    }
+
+    public class ConstrainHornet : PreviewableBehaviour
+    {
+        public float xMin;
+        public float xMax;
+        public float yMin;
+        public float yMax;
+
+        private BoxCollider2D _bc2d;
+
+        private void Start()
+        {
+            _bc2d = GetComponent<BoxCollider2D>();
+        }
+
+        private void Update()
+        {
+            if (isAPreview) return;
+            
+            var minDiff = _bc2d.bounds.min.x - xMin;
+            if (minDiff < -0.8f) transform.SetPositionX(transform.GetPositionX() - minDiff);
+            
+            var maxDiff = xMax - _bc2d.bounds.max.x;
+            if (maxDiff < -0.8f) transform.SetPositionX(transform.GetPositionX() + maxDiff);
+        }
     }
 
     public static void FixFk(GameObject obj)
@@ -1470,6 +1665,117 @@ public static class EnemyFixers
         {
             fsm.GetState("Init").AddAction(() => fsm.SendEvent("GG BOSS"), 2);
             fsm.SendEvent("TRANSFORM");
+        }
+    }
+
+    public static void FixCrystalGuardian(GameObject obj)
+    {
+        var fsm = obj.LocateMyFSM("Beam Miner");
+        
+        obj.RemoveComponentsInChildren<CameraLockArea>();
+        
+        var jumpMinX = fsm.FsmVariables.FindFsmFloat("Jump Min X");
+        var jumpMaxX = fsm.FsmVariables.FindFsmFloat("Jump Max X");
+        fsm.GetState("Aim Jump").AddAction(() =>
+        {
+            var leftCast = Physics2D.Raycast(obj.transform.position, Vector2.left, 15, TerrainMask);
+            jumpMinX.Value = leftCast ? leftCast.point.x + 2 : obj.transform.GetPositionX() - 13;
+            
+            var rightCast = Physics2D.Raycast(obj.transform.position, Vector2.right, 15, TerrainMask);
+            jumpMaxX.Value = rightCast ? rightCast.point.x - 2 : obj.transform.GetPositionX() + 13;
+        }, 0);
+
+        var sleep = fsm.GetState("Sleep");
+        if (sleep != null)
+        {
+            sleep.AddAction(() => fsm.SendEvent("GG BOSS"), 0);
+            fsm.GetState("Roar Start").AddAction(() => fsm.SendEvent("FINISHED"), 0);
+        }
+        else
+        {
+            fsm.GetState("Init").AddAction(() => fsm.SendEvent("GG BOSS"));
+            fsm.GetState("GG Wait").AddAction(() => fsm.SendEvent("FINISHED"));
+        }
+
+        var zapPrefab = sleep == null ? _laserTurretMega2 : _laserTurretMega1;
+        List<PlayMakerFSM> zaps = [];
+        for (var i = 0; i < 4; i++)
+        {
+            var zap = Object.Instantiate(zapPrefab);
+            zap.SetActive(true);
+            zap.name = $"{obj.name} Beam {i+1}";
+            zaps.Add(zap.LocateMyFSM("Laser Bug Mega"));
+        }
+
+        (fsm.GetState("Lasers") ?? fsm.GetState("Laser Shoot")).AddAction(() =>
+        {
+            var pos = obj.transform.position - new Vector3(10.5f, 0);
+            foreach (var zap in zaps)
+            {
+                var cast = Physics2D.Raycast(pos, Vector2.up, 20, TerrainMask);
+                ArchitectPlugin.Instance.Log(cast);
+                ArchitectPlugin.Instance.Log(cast ? cast.point.y : -100);
+                zap.transform.position = new Vector3(pos.x, cast ? cast.point.y - 0.5f : obj.transform.GetPositionY() + 20);
+                pos.x += 7;
+                zap.SendEvent("LASER SHOOT");
+            }
+        }, 0);
+    }
+
+    public static void FixHiveKnight(GameObject obj)
+    {
+        BlockMusicOn(obj);
+        
+        var fsm = obj.LocateMyFSM("Control");
+        fsm.fsmTemplate = null;
+        
+        fsm.GetState("Variant").AddEvent("FINISHED");
+        fsm.GetState("Sleep").AddEvent("WAKE");
+        fsm.GetState("Fall").AddEvent("LAND");
+        fsm.GetState("Intro Land").DisableAction(2);
+        
+        var leftX = fsm.FsmVariables.FindFsmFloat("Left X");
+        var rightX = fsm.FsmVariables.FindFsmFloat("Right X");
+        
+        fsm.GetState("Aim Jump").AddAction(AdjustX, 0);
+        fsm.GetState("Aim R").AddAction(AdjustX, 0);
+        fsm.GetState("Aim L").AddAction(AdjustX, 0);
+
+        AdjustX();
+        
+        var globs = Object.Instantiate(_globs);
+        globs.name = obj.name + " Globs";
+        globs.SetActive(true);
+        
+        fsm.FsmVariables.FindFsmGameObject("Globs Container").Value = globs;
+        fsm.GetState("Glob Strike").AddAction(() =>
+        {
+            globs.transform.position = obj.transform.position - new Vector3(1, 3.7f);
+        }, 0);
+        
+        var droppers = Object.Instantiate(_droppers);
+        droppers.name = obj.name + " Droppers";
+        droppers.SetActive(true);
+
+        fsm.FsmVariables.FindFsmGameObject("Droppers").Value = droppers;
+        fsm.GetState("Roar Recover").AddAction(() =>
+        {
+            droppers.transform.position = obj.transform.position - new Vector3(69.06f, 28.7f);
+        }, 0);
+        
+        var swarmAudio = Object.Instantiate(_swarmAudio);
+        swarmAudio.name = obj.name + " Swarm Audio";
+        fsm.FsmVariables.FindFsmGameObject("Swarm Audio").Value = swarmAudio;
+        
+        return;
+        
+        void AdjustX() 
+        {
+            var castLeft = Physics2D.Raycast(obj.transform.position, Vector2.left, 20, TerrainMask);
+            leftX.Value = castLeft ? castLeft.point.x + 1.5f : obj.transform.GetPositionX() - 30;
+            
+            var castRight = Physics2D.Raycast(obj.transform.position, Vector2.right, 20, TerrainMask);
+            rightX.Value = castRight ? castRight.point.x - 1.5f : obj.transform.GetPositionX() + 30;
         }
     }
 }

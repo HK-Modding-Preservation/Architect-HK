@@ -44,6 +44,11 @@ public static class FsmUtils
         foreach (var index in indexes) state.Actions[index].Enabled = false;
     }
 
+    public static void AddEvent(this FsmState state, string eve, int index = 0)
+    {
+        state.AddAction(() => state.fsm.FsmComponent.SendEvent(eve), index);
+    }
+
     public static void AddAction(this FsmState state, Action action, int index = -1)
     {
         if (index == -1) state.AddCustomAction(action);

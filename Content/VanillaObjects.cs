@@ -308,11 +308,17 @@ public static class VanillaObjects
         AddEnemy("Mosscreep", "mosscreep", ("Fungus1_22", "Moss Walker"));
         AddEnemy("Obble", "obble", ("Fungus1_31", "_Enemies/Fat Fly (1)"));
 
-        /*
         AddEnemy("Hornet Protector", "hornet_protector_boss",
             ("GG_Hornet_1", "Boss Holder/Hornet Boss 1"),
-            preloadAction: ObjectUtils.RemoveComponent<ConstrainPosition>,
-            postSpawnAction: EnemyFixers.FixHornetProtector);*/
+            postSpawnAction: EnemyFixers.FixHornetProtector);
+
+        AddEnemy("Hornet Sentinel", "hornet_sentinel_boss",
+            ("GG_Hornet_2", "Boss Holder/Hornet Boss 2"),
+            preloadAction: o =>
+            {
+                o.GetComponent<MeshRenderer>().enabled = true;
+            },
+            postSpawnAction: EnemyFixers.FixHornetSentinel);
     }
     
     private static void AddCanyonObjects()
@@ -729,6 +735,14 @@ public static class VanillaObjects
             .WithRotateAction(MiscFixers.RotateConveyor)
             .WithRotationGroup(RotationGroup.Three)
             .WithConfigGroup(ConfigGroup.Conveyor));
+
+        AddEnemy("Crystal Guardian", "crystal_guardian",
+            ("GG_Crystal_Guardian", "Mega Zombie Beam Miner (1)"),
+            postSpawnAction: EnemyFixers.FixCrystalGuardian);
+
+        AddEnemy("Enraged Guardian", "enraged_guardian",
+            ("GG_Crystal_Guardian_2", "Battle Scene/Zombie Beam Miner Rematch"),
+            postSpawnAction: EnemyFixers.FixCrystalGuardian);
     }
 
     private static void AddGardensObjects()
@@ -895,6 +909,10 @@ public static class VanillaObjects
         Categories.Interactable.Add(new PreloadObject("Breakable Hive Wall", "breakable_wall_2",
                 ("Hive_03_c", "Hive Breakable Pillar (5)"), preloadAction: MiscFixers.FixBreakableWall)
             .WithConfigGroup(ConfigGroup.PersistentBreakable));
+
+        AddEnemy("Hive Knight", "hive_knight",
+            ("GG_Hive_Knight", "Battle Scene/Hive Knight"),
+            postSpawnAction: EnemyFixers.FixHiveKnight);
     }
 
     private static void AddGroundsObjects()
