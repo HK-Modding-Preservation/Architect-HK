@@ -44,6 +44,10 @@ public static class EnemyFixers
     private static GameObject _swarmAudio;
     private static GameObject _droppers;
     private static GameObject _globs;
+    
+    // Uumuu
+    private static GameObject _multizaps;
+    private static GameObject _jellyfishSpawner;
 
     // Marmu
     private static ContactFilter2D _marmuFilter;
@@ -91,6 +95,12 @@ public static class EnemyFixers
 
         PreloadManager.RegisterPreload(new BasicPreload("GG_Hive_Knight", "Battle Scene/Swarm Audio",
             o => _swarmAudio = o));
+
+        PreloadManager.RegisterPreload(new BasicPreload("GG_Uumuu", "Mega Jellyfish Multizaps",
+            o => _multizaps = o));
+
+        PreloadManager.RegisterPreload(new BasicPreload("GG_Uumuu", "Jellyfish Spawner",
+            o => _jellyfishSpawner = o));
 
         ApplyMusicCue.OnEnter += (orig, self) =>
         {
@@ -1038,7 +1048,7 @@ public static class EnemyFixers
             layer = (int)PhysLayers.TERRAIN_DETECTOR
         };
         var terrainColBc2d = terrainCol.AddComponent<BoxCollider2D>();
-        terrainColBc2d.size = new Vector2(2.2f, 4.2f);
+        terrainColBc2d.size = new Vector2(2.2f, 2);
         terrainColBc2d.offset = new Vector2(0, -1);
         terrainCol.AddComponent<ConstrainPv>().target = pv;
         
@@ -1194,7 +1204,7 @@ public static class EnemyFixers
             layer = (int)PhysLayers.TERRAIN_DETECTOR
         };
         var terrainColBc2d = terrainCol.AddComponent<BoxCollider2D>();
-        terrainColBc2d.size = new Vector2(2.2f, 4.2f);
+        terrainColBc2d.size = new Vector2(2.2f, 2);
         terrainColBc2d.offset = new Vector2(0, -1);
         terrainCol.AddComponent<ConstrainPv>().target = pv;
 
@@ -1816,5 +1826,58 @@ public static class EnemyFixers
             var castRight = Physics2D.Raycast(obj.transform.position, Vector2.right, 20, TerrainMask);
             rightX.Value = castRight ? castRight.point.x - 1.5f : obj.transform.GetPositionX() + 30;
         }
+    }
+
+    public static void Uumuu(GameObject obj)
+    {
+        obj.LocateMyFSM("Bounds").enabled = false;
+        
+        var fsm = obj.LocateMyFSM("Mega Jellyfish");
+        fsm.fsmTemplate = null;
+
+        var multizaps = Object.Instantiate(_multizaps);
+        multizaps.name = obj.name + " Multizaps";
+        multizaps.SetActive(true);
+        
+        fsm.FsmVariables.FindFsmGameObject("Multizaps").Value = multizaps;
+        
+        fsm.GetState("Pattern Choice")
+            .AddAction(() => multizaps.transform.SetPosition2D(obj.transform.position), 0);
+        
+        var jellyfishSpawner = Object.Instantiate(_jellyfishSpawner);
+        jellyfishSpawner.name = obj.name + " Jellyfish Spawner";
+        jellyfishSpawner.SetActive(true);
+        
+        var spawnerFsm = jellyfishSpawner.LocateMyFSM("Spawn");
+        var spawn = spawnerFsm.GetState("Spawn");
+        var rf0 = spawn.GetAction<RandomFloat>(0);
+        var rf3 = spawn.GetAction<RandomFloat>(3);
+        var spawnMin = rf3.min = rf0.min;
+        var spawnMax = rf3.max = rf0.max;
+
+        var spawnYUpper = spawn.GetAction<SetPosition>(2).y; 
+        var spawnYLower = spawn.GetAction<SetPosition>(5).y;
+
+        var roar = fsm.GetState("Roar");
+        roar.DisableAction(3);
+        roar.AddAction(() =>
+        {
+            spawnMin.Value = obj.transform.GetPositionX() - 13.16f;
+            spawnMax.Value = obj.transform.GetPositionX() + 13.16f;
+            
+            var cast = Physics2D.Raycast(obj.transform.position, Vector2.down, 20, TerrainMask);
+            var y = cast ? cast.point.y : obj.transform.GetPositionY() - 20;
+            spawnYUpper.Value = y - 5;
+            spawnYLower.Value = y - 15;
+            spawnerFsm.SendEvent("SPAWN");
+        }, 3);
+        
+        fsm.GetState("Sleep").AddEvent("BATTLE START");
+        fsm.GetState("Wake Pause").AddEvent("FINISHED");
+        fsm.GetState("Wake Rumble").AddEvent("FINISHED");
+        fsm.GetState("Burst").AddEvent("FINISHED", 4);
+        
+        obj.RemoveComponent<ConstrainPosition>();
+        obj.GetComponent<HealthManager>().battleScene = null;
     }
 }

@@ -352,6 +352,10 @@ public static class VanillaObjects
         
         AddSolid("Archives Platform 1", "archive_plat_1", ("Fungus3_archive_02", "fung temple_plat_float_small"));
         AddSolid("Archives Platform 2", "archive_plat_2", ("Fungus3_archive_02", "fung_temple_plat_float (1)"));
+
+        AddEnemy("Uumuu", "uumuu",
+            ("GG_Uumuu", "Mega Jellyfish GG"),
+            postSpawnAction: EnemyFixers.Uumuu);
     }
 
     private static void AddWastesObjects()
