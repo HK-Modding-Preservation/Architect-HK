@@ -123,6 +123,7 @@ public class ObjectColourer : MonoBehaviour
             if (!forceAlpha && !useAlphaByDefault) color.a = 1;
             foreach (var rend in target.GetComponentsInChildren<Renderer>(true))
             {
+                _current++;
                 rend.material.shader = FlashShader;
                 var sf = rend.gameObject.GetOrAddComponent<SpriteFlash>();
                 StartCoroutine(FadeRoutine(fadeTime, sf, color));
@@ -166,6 +167,7 @@ public class ObjectColourer : MonoBehaviour
             self.block.SetFloat(FlashAmount, old.a);
             self.block.SetColor(FlashColor, old);
             self.rend.material.shader = FlashShader;
+            self.rend.SetPropertyBlock(self.block);
         }
     }
     
@@ -182,6 +184,7 @@ public class ObjectColourer : MonoBehaviour
             var col = Color.Lerp(start, color, time / fadeTime);
             sr.block.SetFloat(FlashAmount, col.a);
             sr.block.SetColor(FlashColor, col);
+            sr.rend.SetPropertyBlock(sr.block);
             old.old = col;
             time += Time.deltaTime;
             yield return null;
@@ -189,6 +192,7 @@ public class ObjectColourer : MonoBehaviour
         
         sr.block.SetFloat(FlashAmount, color.a);
         sr.block.SetColor(FlashColor, color);
+        sr.rend.SetPropertyBlock(sr.block);
         old.old = color;
         _current--;
     }

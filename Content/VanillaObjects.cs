@@ -1094,7 +1094,7 @@ public static class VanillaObjects
             .WithConfigGroup(ConfigGroup.ShadeSibling)
             .WithReceiverGroup(ReceiverGroup.Enemies)
             .WithBroadcasterGroup(BroadcasterGroup.Shades)
-            .WithOutputGroup(OutputGroup.Enemies));
+            .WithOutputGroup(OutputGroup.Enemies)).SpritePreview = true;
         
         Categories.Hazards.Add(new PreloadObject("Void Tendrils", "void_tendrils",
             ("Abyss_16", "Abyss Tendrils"))

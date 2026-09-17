@@ -11,7 +11,6 @@ using Architect.Placements;
 using Architect.Storage;
 using JetBrains.Annotations;
 using UnityEngine;
-using Object = UnityEngine.Object;
 
 namespace Architect.Objects.Placeable;
 

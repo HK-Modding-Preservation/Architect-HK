@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Architect.Behaviour.Utility;
 using Architect.Content.Preloads;
+using GlobalEnums;
 using HutongGames.PlayMaker;
 using HutongGames.PlayMaker.Actions;
 using UnityEngine;
@@ -1019,6 +1020,27 @@ public static class EnemyFixers
     public static void FixThk(GameObject obj)
     {
         BlockMusicOn(obj);
+
+        var pv = obj.AddComponent<Pv>();
+        obj.AddComponent<ConstrainPv>().target = pv;
+        foreach (var col2d in obj.transform.GetChild(0).GetComponentsInChildren<BoxCollider2D>(true))
+        {
+            col2d.gameObject.AddComponent<ConstrainPv>().target = pv;
+        }
+
+        var terrainCol = new GameObject("Terrain Collider")
+        {
+            transform =
+            {
+                parent = obj.transform,
+                localPosition = Vector3.zero
+            },
+            layer = (int)PhysLayers.TERRAIN_DETECTOR
+        };
+        var terrainColBc2d = terrainCol.AddComponent<BoxCollider2D>();
+        terrainColBc2d.size = new Vector2(2.2f, 4.2f);
+        terrainColBc2d.offset = new Vector2(0, -1);
+        terrainCol.AddComponent<ConstrainPv>().target = pv;
         
         var fsm = obj.LocateMyFSM("Control");
         
@@ -1113,6 +1135,9 @@ public static class EnemyFixers
             
             teleRangeMin2.Value = left + 8.5f;
             teleRangeMax2.Value = right - 8.5f;
+
+            pv.xMin = left;
+            pv.xMax = right;
         }
     }
 
@@ -1158,6 +1183,20 @@ public static class EnemyFixers
         {
             col2d.gameObject.AddComponent<ConstrainPv>().target = pv;
         }
+
+        var terrainCol = new GameObject("Terrain Collider")
+        {
+            transform =
+            {
+                parent = obj.transform,
+                localPosition = Vector3.zero
+            },
+            layer = (int)PhysLayers.TERRAIN_DETECTOR
+        };
+        var terrainColBc2d = terrainCol.AddComponent<BoxCollider2D>();
+        terrainColBc2d.size = new Vector2(2.2f, 4.2f);
+        terrainColBc2d.offset = new Vector2(0, -1);
+        terrainCol.AddComponent<ConstrainPv>().target = pv;
 
         List<FsmFloat> posLowMins = [];
         List<FsmFloat> posLowMaxes = [];

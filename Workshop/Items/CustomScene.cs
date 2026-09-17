@@ -22,6 +22,8 @@ public class CustomScene : SpriteItem
     private GameObject _mapPiece;
     private RoughMapRoom _mapRough;
     
+    public override string LoadScene => Id;
+    
     public string RoughMapUrl = string.Empty;
     public bool MPoint;
     public float MPpu = 100;

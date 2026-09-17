@@ -261,6 +261,10 @@
         "Y": {
           "Item1": "79b282af-a8c0-4b86-bb2e-71567ad7021e-cc07500e",
           "Item2": "Value"
+        },
+        "Angle": {
+          "Item1": "3fe7b873-96e1-471c-a179-2e19df8352ec",
+          "Item2": "Value"
         }
       },
       "type": "Move Object",
@@ -279,8 +283,8 @@
           "Item2": "Value"
         },
         "1": {
-          "Item1": "c3df209d-1fa6-407b-b606-f57a1b55860a-cc07500e",
-          "Item2": "Rotation"
+          "Item1": "c8814882-7efd-48c0-bc82-366e60105ffe",
+          "Item2": "Value"
         }
       },
       "type": "Operation",
@@ -501,6 +505,86 @@
         "object": "ab521951-cc07500e",
         "object_type": "coloured_square"
       }
+    },
+    {
+      "pos": {
+        "Item1": -744.7551,
+        "Item2": -747.0951
+      },
+      "block_id": "716c02d6-a0f8-4c6f-bf5a-799d61404d35",
+      "events": {
+        "OnStart": [
+          {
+            "Item1": "5eeffe6f-d104-4d98-9713-b5bd2df0e5fc",
+            "Item2": "In"
+          },
+          {
+            "Item1": "c8814882-7efd-48c0-bc82-366e60105ffe",
+            "Item2": "Set"
+          }
+        ]
+      },
+      "vars": {},
+      "type": "Start",
+      "ext": {}
+    },
+    {
+      "pos": {
+        "Item1": -707.6537,
+        "Item2": -878.1867
+      },
+      "block_id": "5eeffe6f-d104-4d98-9713-b5bd2df0e5fc",
+      "events": {
+        "Out": [
+          {
+            "Item1": "c3df209d-1fa6-407b-b606-f57a1b55860a-cc07500e",
+            "Item2": "SetRotation"
+          }
+        ]
+      },
+      "vars": {},
+      "type": "Delay",
+      "config": {
+        "delay_num": "0.01"
+      },
+      "ext": {}
+    },
+    {
+      "pos": {
+        "Item1": 89.3113556,
+        "Item2": -837.5249
+      },
+      "block_id": "3fe7b873-96e1-471c-a179-2e19df8352ec",
+      "events": {},
+      "vars": {},
+      "type": "Constant Num",
+      "config": {
+        "prefab_configurable": "False",
+        "constant_num": "0"
+      },
+      "ext": {}
+    },
+    {
+      "pos": {
+        "Item1": -353.894,
+        "Item2": -1212.93872
+      },
+      "block_id": "c8814882-7efd-48c0-bc82-366e60105ffe",
+      "events": {},
+      "vars": {
+        "New Value": {
+          "Item1": "c3df209d-1fa6-407b-b606-f57a1b55860a-cc07500e",
+          "Item2": "Rotation"
+        }
+      },
+      "type": "Variable (Number)",
+      "config": {
+        "var_persistence_num": "0",
+        "var_default_num": "0",
+        "var_local_num": "True",
+        "var_id_num": "rot"
+      },
+      "ext": {}
     }
   ]
 }
