@@ -1377,6 +1377,19 @@ public static class VanillaObjects
         
         Categories.Misc.Add(new PreloadObject("Standard Godhome Arena", "godhome_arena",
             ("GG_False_Knight", "GG_Arena_Prefab")));
+
+        AddEnemy("Nailmaster Oro", "oro",
+            ("GG_Nailmasters", "Brothers/Oro"),
+            postSpawnAction: EnemyFixers.FixBrother);
+        
+        AddEnemy("Nailmaster Mato", "mato",
+            ("GG_Nailmasters", "Brothers/Mato"),
+            preloadAction: o => o.GetComponent<tk2dSpriteAnimator>().defaultClipId = 43,
+            postSpawnAction: EnemyFixers.FixBrother);
+        
+        AddEnemy("Paintmaster Sheo", "sheo",
+            ("GG_Painter", "Battle Scene/Sheo Boss"),
+            postSpawnAction: EnemyFixers.FixSheo);
     }
 
     private static void AddMiscObjects()

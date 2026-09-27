@@ -1129,8 +1129,8 @@ public static class EnemyFixers
 
         void AdjustY()
         {
-            var cast = Physics2D.Raycast(obj.transform.position, Vector2.down, 50, TerrainMask);
-            var y = cast ? cast.point.y : obj.transform.GetPositionY() - 30;
+            var cast = Physics2D.Raycast(obj.transform.position, Vector2.down, 40, TerrainMask);
+            var y = cast ? cast.point.y : obj.transform.GetPositionY() - 40;
             
             plumeY.Value = y;
             stunLandY.Value = y + 4;
@@ -1962,5 +1962,135 @@ public static class EnemyFixers
         if (!ede) return;
         ede.PreInstantiate();
         if (ede.corpse) ede.corpse.transform.GetChild(0).gameObject.SetActive(false);
+    }
+    
+    public static void FixBrother(GameObject obj)
+    {
+        BlockMusicOn(obj);
+        obj.RemoveComponent<ConstrainPosition>();
+        
+        var nb = obj.GetComponent<NonBouncer>();
+        if (nb) nb.SetActive(false);
+        obj.GetComponent<HealthManager>().invincible = false;
+        obj.GetComponent<DamageHero>().damageDealt = 1;
+        
+        var fsm = obj.LocateMyFSM("nailmaster");
+
+        fsm.fsmTemplate = null;
+
+        var topslashY = fsm.FsmVariables.FindFsmFloat("Topslash Y");
+
+        var dashL = fsm.GetState("Dash L");
+        var targetXDashL = dashL.GetAction<SetFloatValue>(0).floatValue;
+        var endXDashL = dashL.GetAction<SetFloatValue>(1).floatValue;
+        
+        var dashR = fsm.GetState("Dash R");
+        var targetXDashR = dashR.GetAction<SetFloatValue>(0).floatValue;
+        var endXDashR = dashR.GetAction<SetFloatValue>(1).floatValue;
+
+        var cycloneReady = fsm.GetState("Cyclone Ready"); 
+        var targetXCycloneReady = cycloneReady.GetAction<SetFloatValue>(6).floatValue;
+        cycloneReady.GetAction<FloatCompare>(4).float2 = targetXCycloneReady;
+        
+        var bt = fsm.GetState("Init").GetAction<BoolTest>(32);
+        bt.isFalse = bt.isTrue;
+        fsm.GetState("P2 HP Adjust").DisableAction(1);
+        fsm.GetState("Rest").AddEvent("FINISHED");
+        fsm.GetState("Roar").DisableActions(4, 5, 7, 8, 9, 10, 11);
+        fsm.GetState("Roar End").DisableAction(3);
+        fsm.GetState("First Idle").DisableAction(3);
+        fsm.GetState("Single?").AddEvent("SINGLE");
+        fsm.GetState("Idle").DisableAction(5);
+        
+        fsm.GetState("Unbrother").DisableAction(0);
+
+        var adjustYEveryFrame = new FsmUtils.EveryFrameAction(AdjustY);
+        fsm.GetState("Jump").AddAction(adjustYEveryFrame, 0);
+        fsm.GetState("Cyclone Up").AddAction(adjustYEveryFrame, 0);
+        fsm.GetState("Jump To").AddAction(adjustYEveryFrame, 0);
+        
+        fsm.GetState("Can Evade?").AddEvent("FINISHED");
+        
+        fsm.FsmVariables.FindFsmBool("Phase 2").Value = true;
+        fsm.FsmVariables.FindFsmFloat("Idle Time").Value = 0;
+        
+        fsm.GetState("Defeated").AddEvent("BOW");
+        fsm.GetState("Drum Roll").AddEvent("FINISHED");
+        fsm.GetState("Bow").transitions = [];
+        
+        dashL.AddAction(AdjustX, 0);
+        dashR.AddAction(AdjustX, 0);
+        cycloneReady.AddAction(AdjustX, 0);
+        
+        AdjustY();
+        AdjustX();
+
+        return;
+
+        void AdjustY()
+        {
+            var cast = Physics2D.Raycast(obj.transform.position, Vector2.down, 30, TerrainMask);
+            var y = cast ? cast.point.y : obj.transform.GetPositionY() - 30;
+
+            topslashY.Value = y + 12.1f;
+        }
+
+        void AdjustX()
+        {
+            var castLeft = Physics2D.Raycast(obj.transform.position, Vector2.left, 20, TerrainMask);
+            var left = castLeft ? castLeft.point.x : obj.transform.GetPositionX() - 20;
+            
+            var castRight = Physics2D.Raycast(obj.transform.position, Vector2.right, 20, TerrainMask);
+            var right = castRight ? castRight.point.x : obj.transform.GetPositionX() + 20;
+
+            targetXDashL.Value = right - 3.3f;
+            endXDashL.Value = right - 24.3f;
+            
+            targetXDashR.Value = left + 3.3f;
+            endXDashR.Value = left + 24.3f;
+
+            targetXCycloneReady.Value = (left + right) / 2f;
+        }
+    }
+
+    public static void FixSheo(GameObject obj)
+    {
+        var fsm = obj.LocateMyFSM("nailmaster_sheo");
+        fsm.fsmTemplate = null;
+        
+        var topslashY = fsm.FsmVariables.FindFsmFloat("Topslash Y");
+
+        var adjustYEveryFrame = new FsmUtils.EveryFrameAction(AdjustY);
+        fsm.GetState("Jump").AddAction(adjustYEveryFrame, 0);
+        fsm.GetState("Jump To").AddAction(adjustYEveryFrame, 0);
+        fsm.GetState("JumpSlash1").AddAction(adjustYEveryFrame, 0);
+        
+        fsm.GetState("Can Evade?").AddEvent("FINISHED");
+        
+        var nextMove = fsm.FsmVariables.FindFsmString("Next Move");
+        fsm.GetState("After Evade").AddAction(() =>
+        {
+            if (nextMove.Value.IsNullOrWhiteSpace()) nextMove.Value = "SLASH"; 
+        }, 0);
+        
+        fsm.GetState("Painting").AddEvent("FINISHED");
+        fsm.GetState("Roar").DisableActions(1, 2);
+        
+        fsm.GetState("Paint Batch 2").AddEvent("FINISHED");
+        fsm.GetState("Paint Batch 3").AddEvent("FINISHED");
+        
+        fsm.GetState("Battle Start").DisableAction(3);
+        
+        AdjustY();
+        
+        return;
+        
+        void AdjustY()
+        {
+            var cast = Physics2D.Raycast(obj.transform.position, Vector2.down, 30, TerrainMask);
+            var y = cast ? cast.point.y : obj.transform.GetPositionY() - 30;
+
+            topslashY.Value = y + 12.1f;
+        }
     }
 }
