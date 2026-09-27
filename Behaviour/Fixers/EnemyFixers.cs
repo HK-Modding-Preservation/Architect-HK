@@ -48,6 +48,10 @@ public static class EnemyFixers
     // Uumuu
     private static GameObject _multizaps;
     private static GameObject _jellyfishSpawner;
+    
+    // False Knight
+    private static GameObject _fkBarrelSummon;
+    private static GameObject _fkBarrelSummonDream;
 
     // Marmu
     private static ContactFilter2D _marmuFilter;
@@ -101,6 +105,12 @@ public static class EnemyFixers
 
         PreloadManager.RegisterPreload(new BasicPreload("GG_Uumuu", "Jellyfish Spawner",
             o => _jellyfishSpawner = o));
+
+        PreloadManager.RegisterPreload(new BasicPreload("GG_False_Knight", "Battle Scene/FK Barrel Summon",
+            o => _fkBarrelSummon = o));
+
+        PreloadManager.RegisterPreload(new BasicPreload("GG_Failed_Champion", "FK Barrel Summon Dream",
+            o => _fkBarrelSummonDream = o));
 
         ApplyMusicCue.OnEnter += (orig, self) =>
         {
@@ -1498,26 +1508,72 @@ public static class EnemyFixers
             if (maxDiff < -0.8f) transform.SetPositionX(transform.GetPositionX() + maxDiff);
         }
     }
-
+    
     public static void FixFk(GameObject obj)
     {
+        BlockMusicOn(obj);
+        
         var fsm = obj.LocateMyFSM("FalseyControl");
 
-        fsm.FsmVariables.FindFsmFloat("Final Point X").value = obj.transform.GetPositionX();
-        fsm.FsmVariables.FindFsmFloat("Rage Point X").value = obj.transform.GetPositionX();
+        var gt = fsm.fsm.globalTransitions;
+        fsm.fsm.globalTransitions = [];
 
-        var rMin = fsm.FsmVariables.FindFsmFloat("Range Min");
-        var rMax = fsm.FsmVariables.FindFsmFloat("Range Max");
+        var fpx= fsm.FsmVariables.FindFsmFloat("Final Point X");
+        var rpx = fsm.FsmVariables.FindFsmFloat("Rage Point X");
         
-        
-        fsm.GetState("Dormant").AddAction(() => fsm.SendEvent("BATTLE START"), 1);
-        
-        fsm.GetState("Idle").AddAction(() =>
+        fsm.GetState("Towards").DisableAction(1);
+
+        var dream = false;
+        var cig = fsm.GetState("Check If GG");
+        if (cig == null)
         {
-            var heroPos = HeroController.instance.transform.position;
-            rMin.value = heroPos.x - 13.5f;
-            rMax.value = heroPos.x + 13.5f;
+            cig = fsm.GetState("Check GG");
+            dream = true;
+        }
+        
+        fsm.GetState("Rubble End").AddAction(() => fsm.fsm.globalTransitions = gt, 0);
+        
+        var barrelSummon = Object.Instantiate(dream ? _fkBarrelSummonDream : _fkBarrelSummon);
+        barrelSummon.name = obj.name + " Barrel Summon";
+        barrelSummon.SetActive(true);
+        fsm.GetState("Dormant").AddAction(() =>
+        {
+            fsm.SendEvent("BATTLE START");
+            fsm.FsmVariables.FindFsmGameObject("Barrel Summoner").Value = barrelSummon;
+        }, 1);
+        var spawnPos = barrelSummon.LocateMyFSM("summon").GetState("Spawn").GetAction<RandomFloat>(0);
+        
+        var check = cig.GetAction<GGCheckIfBossScene>(1);
+        check.regularSceneEvent = check.bossSceneEvent;
+        cig.AddAction(AdjustX, 0);
+        
+        fsm.GetState("Blow").AddAction(() =>
+        {
+            obj.BroadcastEvent("OnDeath");
+            obj.BroadcastEvent("FirstDeath");
+            
+            var hm = obj.GetComponent<HealthManager>();
+            if (hm) hm.SetIsDead(true);
         }, 0);
+        
+        fsm.GetState("Idle").AddAction(AdjustX, 0);
+        
+        fsm.GetState("Dream Return")?.AddAction(() => fsm.SendEvent("FINISHED"), 0);
+        
+        AdjustX();
+
+        return;
+
+        void AdjustX()
+        {
+            var val = Random.Range(6f, 12f);
+            if (Random.value > 0.5f) val = -val;
+            fpx.Value = rpx.Value = obj.transform.GetPositionX() + val;
+
+            spawnPos.min.Value = obj.transform.GetPositionX() - 16;
+            spawnPos.max.Value = obj.transform.GetPositionX() + 16;
+            barrelSummon.transform.SetPositionY(obj.transform.GetPositionY() + 15);
+        }
     }
 
     public class Garpede : MonoBehaviour
@@ -1886,5 +1942,25 @@ public static class EnemyFixers
         
         obj.RemoveComponent<ConstrainPosition>();
         obj.GetComponent<HealthManager>().battleScene = null;
+    }
+
+    public static void FixPaleLurker(GameObject obj)
+    {
+        var fsm = obj.LocateMyFSM("Lurker Control");
+        fsm.GetState("Dormant").AddEvent("START");
+        fsm.GetState("After Fall").AddEvent("FINISHED");
+        fsm.GetState("Tele Height").AddEvent("HIGH");
+        fsm.GetState("Get High").DisableAction(0);
+        
+        var tp = new GameObject(obj.name + " Tele Point")
+        {
+            transform = { position = obj.transform.position }
+        };
+        fsm.FsmVariables.FindFsmGameObject("Tele Point").value = tp;
+
+        var ede = obj.GetComponent<EnemyDeathEffects>();
+        if (!ede) return;
+        ede.PreInstantiate();
+        if (ede.corpse) ede.corpse.transform.GetChild(0).gameObject.SetActive(false);
     }
 }

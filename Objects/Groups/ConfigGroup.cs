@@ -1550,6 +1550,16 @@ public static class ConfigGroup
                 }).WithDefaultValue(new Vector2(0, 5)))
     ]);
 
+    public static readonly List<ConfigType> FalseKnight = GroupUtils.Merge(Enemies, [
+        ConfigurationManager.RegisterConfigType(
+            new IntConfigType("Stun Count", "false_knight_stun_count",
+                (o, value) =>
+                {
+                    o.LocateMyFSM("FalseyControl").FsmVariables.FindFsmInt("Stunned Amount").Value =
+                        3 - value.GetValue();
+                }).WithDefaultValue(3))
+    ]);
+
     public static readonly List<ConfigType> Gorb = GroupUtils.Merge(Enemies, [
         ConfigurationManager.RegisterConfigType(
             new ChoiceConfigType("Position Mode", "gorb_pos_mode",
@@ -1937,6 +1947,14 @@ public static class ConfigGroup
             {
                 o.GetOrAddComponent<VelocityApplier>().y = value.GetValue();
             }).WithDefaultValue(0))
+    ]);
+
+    public static readonly List<ConfigType> LurkerBarb = GroupUtils.Merge(Velocity, [
+        ConfigurationManager.RegisterConfigType(
+            new FloatConfigType("Spike Time", "lurker_barb_lifetime", (o, value) =>
+            {
+                o.LocateMyFSM("Control").GetState("Spike Up").GetAction<Wait>(3).time = value.GetValue();
+            }).WithDefaultValue(8))
     ]);
 
     public static readonly List<ConfigType> Stomper = GroupUtils.Merge(Generic, [

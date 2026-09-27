@@ -246,10 +246,6 @@ public static class VanillaObjects
             preloadAction: MiscFixers.AddComponent<EnemyFixers.Gorb>)
             .WithConfigGroup(ConfigGroup.Gorb);*/
         
-        /*AddEnemy("False Knight", "false_knight",
-            ("GG_False_Knight", "Battle Scene/False Knight New"),
-            postSpawnAction: EnemyFixers.FixFk).SpritePreview = true;*/
-        
         Categories.Misc.Add(new PreloadObject("Grub Bottle", "grub_bottle",
                 ("Crossroads_31", "Grub Bottle"),
                 postSpawnAction: MiscFixers.FixGrubBottle)
@@ -257,6 +253,31 @@ public static class VanillaObjects
             .WithBroadcasterGroup(BroadcasterGroup.PersistentBreakable));
         
         AddEnemy("Grub Mimic", "grub_mimic", ("Mines_16", "Grub Mimic Top/Grub Mimic"));
+
+        Categories.Misc.Add(new PreloadObject("Macebug", "macebug",
+            ("GG_False_Knight", "Battle Scene/False Knight New/Staff/Staff Head"),
+            extraction: o =>
+                o.LocateMyFSM("Mace Control").GetState("State 2").GetAction<CreateObject>(1).gameObject.Value));
+        
+        AddEnemy("False Knight", "false_knight",
+            ("GG_False_Knight", "Battle Scene/False Knight New"),
+            preloadAction: o =>
+            {
+                o.GetComponent<MeshRenderer>().enabled = true;
+                o.GetComponent<tk2dSpriteAnimator>().defaultClipId = 0;
+            },
+            postSpawnAction: EnemyFixers.FixFk)
+            .WithConfigGroup(ConfigGroup.FalseKnight);
+        
+        AddEnemy("Failed Champion", "failed_champion",
+            ("GG_Failed_Champion", "False Knight Dream"),
+            preloadAction: o =>
+            {
+                o.GetComponent<MeshRenderer>().enabled = true;
+                o.GetComponent<tk2dSpriteAnimator>().defaultClipId = 0;
+            },
+            postSpawnAction: EnemyFixers.FixFk)
+            .WithConfigGroup(ConfigGroup.FalseKnight);
     }
 
     private static void AddGreenObjects()
@@ -845,6 +866,15 @@ public static class VanillaObjects
             "Colosseum Manager/Waves/Wave 6/Colosseum Cage Small");
         AddColoEnemy("Death Loodle", "death_loodle", 
             "Colosseum Manager/Waves/Wave 9/Colosseum Cage Small (1)");
+
+        AddEnemy("Pale Lurker", "pale_lurker", ("GG_Lurker", "Lurker Control/Pale Lurker"),
+            postSpawnAction: EnemyFixers.FixPaleLurker);
+
+        Categories.Attacks.Add(new PreloadObject("Lurker Barb", "lurker_barb",
+            ("GG_Lurker", "Lurker Control/Lurker Barb")))
+            .WithConfigGroup(ConfigGroup.LurkerBarb)
+            .WithInputGroup(InputGroup.Velocity)
+            .WithReceiverGroup(ReceiverGroup.Velocity);
 
         AddEnemy("Brooding Mawlek", "brooding_mawlek",
             ("GG_Brooding_Mawlek", "Battle Scene/Mawlek Body"),

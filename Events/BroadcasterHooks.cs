@@ -37,6 +37,10 @@ public static class BroadcasterHooks
                 orig(self, attackDirection, attackType, ignoreEvasion);
 
                 if (dead) return;
+
+                if (self.hasSpecialDeath && 
+                    (self.gameObject.LocateMyFSM("FalseyControl") || self.gameObject.LocateMyFSM("Health Check")))
+                    return;
                 
                 self.gameObject.BroadcastEvent("OnDeath");
                 self.gameObject.BroadcastEvent("FirstDeath");
