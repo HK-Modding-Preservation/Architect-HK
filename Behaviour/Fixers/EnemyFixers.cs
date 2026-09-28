@@ -2276,6 +2276,14 @@ public static class EnemyFixers
         var uppercutY = fsm.GetState("Uppercut Up").GetAction<FloatCompare>(7).float2;
         var adTeleInY = fsm.GetState("AD Tele In").GetAction<SetPosition>(3).y;
         fsm.GetState("UP Explode").DisableAction(0);
+        
+        // Death Persistence
+        var hm = obj.GetComponent<HealthManager>();
+        var deathExplode = fsm.GetState("Death Explode");
+        deathExplode.AddAction(() =>
+        {
+            if (hm) hm.SetIsDead(true);
+        }, 0);
 
         // Boss-specific changes
         FsmFloat pillarTeleInY = null;
@@ -2296,7 +2304,7 @@ public static class EnemyFixers
         else
         {
             fsm.GetState("Init").ChangeTransition("FINISHED", "Set Balloon HP");
-            fsm.GetState("Death Explode").DisableAction(10);
+            deathExplode.DisableAction(11);
             fsm.GetState("Bow").DisableActions(0, 2);
         }
 
