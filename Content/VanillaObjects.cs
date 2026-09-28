@@ -1087,6 +1087,7 @@ public static class VanillaObjects
 
         AddEnemy("Nightmare King Grimm", "nightmare_king_grimm",
             ("Grimm_Nightmare", "Grimm Control/Nightmare Grimm Boss"),
+            preloadAction: o => o.transform.SetPositionZ(0.006f),
             postSpawnAction: EnemyFixers.FixNkg);
         
         return;
