@@ -2297,7 +2297,6 @@ public static class EnemyFixers
 
             var dormant = fsm.GetState("Dormant");
             dormant.AddEvent("WAKE");
-            dormant.ChangeTransition("WAKE", "Move Choice");
             fsm.GetState("Halfway?").AddEvent("FINISHED");
             fsm.GetState("HUD Canvas OUT").DisableAction(1);
         }
