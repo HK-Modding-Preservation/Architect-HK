@@ -548,6 +548,11 @@ public static class VanillaObjects
         AddEnemy("Flukefey", "flukefey", ("GG_Pipeway", "Fluke Fly"));
         AddEnemy("Flukemon", "flukemon", ("GG_Pipeway", "Flukeman"));
         AddEnemy("Flukemunga", "flukemunga", ("GG_Pipeway", "Fat Fluke"));
+
+        /*AddEnemy("Dung Defender", "dung_defender",
+            ("GG_Dung_Defender", "Dung Defender"),
+            preloadAction: o => o.GetComponent<MeshRenderer>().enabled = true,
+            postSpawnAction: EnemyFixers.FixDungDefender);*/
     }
     
     private static void AddCityObjects()
@@ -1075,6 +1080,14 @@ public static class VanillaObjects
         AddFlamebearerEnemy("Grimmkin Novice", "grimmkin_novice", "Ruins1_28", 1);
         AddFlamebearerEnemy("Grimmkin Master", "grimmkin_master", "Tutorial_01", 2);
         AddFlamebearerEnemy("Grimmkin Nightmare", "grimmkin_nightmare", "Fungus2_30", 3);
+
+        AddEnemy("Troupe Master Grimm", "troupe_master_grimm",
+            ("Grimm_Main_Tent_boss", "Grimm Boss"),
+            postSpawnAction: EnemyFixers.FixTmg);
+
+        AddEnemy("Nightmare King Grimm", "nightmare_king_grimm",
+            ("Grimm_Nightmare", "Grimm Control/Nightmare Grimm Boss"),
+            postSpawnAction: EnemyFixers.FixNkg);
         
         return;
 
