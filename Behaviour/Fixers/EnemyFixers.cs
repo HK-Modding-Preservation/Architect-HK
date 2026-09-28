@@ -1470,6 +1470,24 @@ public static class EnemyFixers
         aDash.AddAction(AdjustX, 0);
 
         fsm.GetState("Set Scale")?.DisableAction(0);
+        
+        var ede = obj.GetComponent<EnemyDeathEffects>();
+        if (ede)
+        {
+            ede.PreInstantiate();
+            if (ede.corpse)
+            {
+                var needle = obj.transform.Find("Needle").gameObject;
+                var corpseFsm = ede.corpse.LocateMyFSM("Control");
+                corpseFsm.fsm.StartState = "Blow";
+                var blow = corpseFsm.GetState("Blow");
+                blow.DisableAction(4);
+                blow.AddAction(() =>
+                {
+                    if (needle) needle.SetActive(false);
+                }, 4);
+            }
+        }
 
         AdjustX();
         AdjustY();
