@@ -890,6 +890,11 @@ public static class VanillaObjects
             .WithConfigGroup(ConfigGroup.Oblobble)
             .WithReceiverGroup(ReceiverGroup.Oblobble);
 
+        AddEnemy("God Tamer", "god_tamer",
+            ("Room_Colosseum_Gold", "Colosseum Manager/Waves/Lobster Lancer/Entry Object/Lancer"),
+            preloadAction: o => o.GetComponent<HealthManager>().smallGeoDrops = 0,
+            postSpawnAction: EnemyFixers.FixTamer);
+
         AddEnemy("God Tamer Beast", "god_tamer_beast",
             ("Room_Colosseum_Gold", "Colosseum Manager/Waves/Lobster Lancer/Entry Object/Lobster"),
             postSpawnAction: EnemyFixers.FixTamerBeast);
@@ -1073,6 +1078,10 @@ public static class VanillaObjects
 
         AddSolid("Godhome Platform 1", "gg_plat_1", ("GG_Atrium_Roof", "gg_plat_float_small"));
         AddSolid("Godhome Platform 2", "gg_plat_2", ("GG_Workshop", "gg_plat_float_wide"));
+
+        /*Categories.Misc.Add(new PreloadObject("Monomon", "monomon",
+            ("Dream_Guardian_Monomon", "Dreamer NPC"),
+            postSpawnAction: MiscFixers.FixDreamer));*/
     }
 
     private static void AddGrimmObjects()
@@ -1315,6 +1324,10 @@ public static class VanillaObjects
         AddEnemy("Fluke Zoteling", "zoteling_fluke",
             ("GG_Mighty_Zote", "Battle Control/Zote Fluke"),
             postSpawnAction: EnemyFixers.FixFlukeZoteling);
+        
+        AddEnemy("Head of Zote", "head_of_zote",
+            ("GG_Mighty_Zote", "Battle Control/Zote Thwomp"),
+            postSpawnAction: EnemyFixers.FixHeadOfZote);
         
         /*
         AddEnemy("Grey Prince Zote", "grey_prince_zote",

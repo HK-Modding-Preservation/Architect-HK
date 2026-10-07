@@ -12,7 +12,18 @@ public class AudioPlayer : PreviewableBehaviour
 {
     public bool isAtmos;
     public bool playOnStart;
-    public bool lockMusic = true;
+
+    public bool LockMusic
+    {
+        get;
+        set
+        {
+            field = value;
+            if (!value) Players.Remove(this);
+            else if (gameObject.activeSelf && !Players.Contains(this)) Players.Add(this);
+        }
+    }
+
     public string cueId;
 
     public float fadeTime;
@@ -64,7 +75,8 @@ public class AudioPlayer : PreviewableBehaviour
             (Action<AudioMixerSnapshot, float> orig, AudioMixerSnapshot self, float timeToReach) =>
             {
                 Players.RemoveAll(i => !i);
-                if (Players.Count > 0 && !_isUnlocked) return;
+                if (Players.Count > 0 && !_isUnlocked && self.audioMixer.name is "Music" or "Atmos" or "Music Effects")
+                    return;
                 orig(self, timeToReach);
             });
 
@@ -106,12 +118,12 @@ public class AudioPlayer : PreviewableBehaviour
 
     private void OnEnable()
     {
-        if (lockMusic) Players.Add(this);
+        if (!Players.Contains(this) && LockMusic) Players.Add(this);
     }
 
     private void OnDisable()
     {
-        if (lockMusic) Players.Remove(this);
+        if (LockMusic) Players.Remove(this);
     }
 
     private void Start()

@@ -250,7 +250,7 @@ public static class ConfigGroup
         ConfigurationManager.RegisterConfigType(
             new BoolConfigType("Lock", "audio_player_lock", (o, value) =>
             {
-                o.GetComponent<AudioPlayer>().lockMusic = value.GetValue();
+                o.GetComponent<AudioPlayer>().LockMusic = value.GetValue();
             }).WithDefaultValue(true)),
         ConfigurationManager.RegisterConfigType(
             new StringConfigType("Audio Cue", "audio_player_cue", (o, value) =>
@@ -1471,7 +1471,7 @@ public static class ConfigGroup
                     o.GetComponentInChildren<HealthManager>(true).enemyType = value.GetValue() ? 1 : 6;
                 })),
         ConfigurationManager.RegisterConfigType(
-            new BoolConfigType("Can Pogo On", "enemy_can_pogo",
+            new BoolConfigType("Pogoable", "enemy_can_pogo",
                 (o, value) => {
                     if (!value.GetValue())
                     {

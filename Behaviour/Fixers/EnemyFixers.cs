@@ -678,8 +678,37 @@ public static class EnemyFixers
 
         var floorY = fsm.FsmVariables.FindFsmFloat("Floor Y");
         fsm.GetState("Side Tele Aim").AddAction(() => floorY.Value = fsm.gameObject.transform.position.y, 0);
-        fsm.GetState("Up Tele Aim").AddAction(() => body.gravityScale = 0, 0);
+        var uta = fsm.GetState("Up Tele Aim");
+        uta.DisableAction(0);
+        uta.AddAction(() => body.gravityScale = 0, 0);
         fsm.GetState("Idle").AddAction(() => body.gravityScale = 1, 0);
+    }
+
+    public static void FixTamer(GameObject obj)
+    {
+        var fsm = obj.LocateMyFSM("Control");
+        fsm.fsmTemplate = null;
+        var defeat = fsm.GetState("Defeat");
+        var hm = obj.GetComponent<HealthManager>();
+
+        var death = fsm.FsmVariables.FindFsmBool("Death");
+        var inAir = fsm.GetState("In Air");
+        inAir.AddTransition("DEFEAT", "Defeat");
+        inAir.AddAction(new FsmUtils.EveryFrameAction(() =>
+        {
+            if (death.Value) fsm.SendEvent("DEFEAT");
+        }));
+        defeat.DisableActions(8, 12);
+        defeat.AddAction(() =>
+        {
+            obj.layer = (int)PhysLayers.CORPSE;
+            if (hm)
+            {
+                hm.SetIsDead(true);
+                hm.SpawnGeo();
+            }
+        }, 0);
+        fsm.GetState("Done").DisableAction(0);
     }
 
     public static void FixTamerBeast(GameObject obj)
@@ -1562,6 +1591,7 @@ public static class EnemyFixers
 
         var gt = fsm.fsm.globalTransitions;
         fsm.fsm.globalTransitions = [];
+        fsm.GetState("Start Fall").AddEvent("FALL", -1);
 
         var fpx = fsm.FsmVariables.FindFsmFloat("Final Point X");
         var rpx = fsm.FsmVariables.FindFsmFloat("Rage Point X");
@@ -1852,6 +1882,7 @@ public static class EnemyFixers
         {
             fsm.GetState("Init").AddAction(() => fsm.SendEvent("GG BOSS"));
             fsm.GetState("GG Wait").AddAction(() => fsm.SendEvent("FINISHED"));
+            fsm.GetState("Range Check 2").DisableAction(2);
         }
 
         var zapPrefab = sleep == null ? _laserTurretMega2 : _laserTurretMega1;
@@ -2086,11 +2117,11 @@ public static class EnemyFixers
             var right = castRight ? castRight.point.x : obj.transform.GetPositionX() + 20;
 
             targetXDashL.Value = right - 3.3f;
-            endXDashL.Value = right - 24.3f;
-
+            endXDashR.Value = right - 9.3f;
+            
             targetXDashR.Value = left + 3.3f;
-            endXDashR.Value = left + 24.3f;
-
+            endXDashL.Value = left + 9.3f;
+            
             targetXCycloneReady.Value = (left + right) / 2f;
         }
     }
@@ -2457,5 +2488,28 @@ public static class EnemyFixers
                 self.Accelerate(accel, maxSpeed);
             }
         }
+    }
+
+    public static void FixHeadOfZote(GameObject obj)
+    {
+        var fsm = obj.LocateMyFSM("Control");
+        fsm.GetState("Dormant").AddEvent("GO");
+        fsm.GetState("Set Pos").DisableAction(1);
+        var brk = fsm.GetState("Break");
+        brk.AddAction(() =>
+        {
+            var hm = obj.GetComponent<HealthManager>();
+            if (hm) hm.SetIsDead(true);
+            var mr = obj.GetComponent<MeshRenderer>();
+            if (mr) mr.enabled = false;
+        });
+        brk.transitions = [];
+        fsm.GetState("Tween Down").AddEvent("FINISHED", -1);
+        var o = fsm.GetState("Out");
+        o.DisableActions(2, 4);
+        o.AddAction(() => obj.SetActive(false), 0);
+
+        var main = obj.transform.Find("Pt Break").GetComponent<ParticleSystem>().main;
+        main.playOnAwake = false;
     }
 }

@@ -29,6 +29,8 @@ public static class Settings
     public static Keybind GrabId;
     public static Keybind StartLocked;
     public static Keybind StartScripted;
+    public static Keybind SaveHotbar;
+    public static Keybind LoadHotbar;
     
     public static Keybind Blank;
     public static Keybind Cursor;
@@ -209,6 +211,20 @@ public static class Settings
             "StartScripted",
             Key.None,
             "Makes the placed object be added to the script instantly upon placing it"
+        ));
+        
+        SaveHotbar = new Keybind(Bind(
+            "Keybinds",
+            "SaveHotbar",
+            Key.LeftControl,
+            "Saves the current hotbar when held with a number."
+        ));
+        
+        LoadHotbar = new Keybind(Bind(
+            "Keybinds",
+            "LoadHotbar",
+            Key.LeftAlt,
+            "Loads a saved hotbar when held with a number."
         ));
         
         Blank = new Keybind(Bind(

@@ -27,12 +27,15 @@ public class ItemBlock : ScriptBlock
     public override object GetValue(string id)
     {
         var item = Finder.GetItem(ItemName);
-
-        if (id == "Obtained") return item != null && (item.Redundant() || item.IsObtained());
-        return item is CustomItem.IcCustomItem i &&
+        
+        var amount = item is CustomItem.IcCustomItem i &&
                ArchitectData.Instance.CustomItems.TryGetValue(i.Item.Id, out var value)
             ? value
             : 0;
+        if (id == "Obtained")
+            return item != null && (item.Redundant() || item.IsObtained())
+                   || amount > 0;
+        return amount;
     }
 
     protected override void Trigger(string trigger)

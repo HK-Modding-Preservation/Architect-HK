@@ -1,11 +1,8 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using System.Reflection;
 using GlobalEnums;
-using JetBrains.Annotations;
 using UnityEngine;
 
 namespace Architect.Utils;
@@ -88,5 +85,64 @@ public static class MiscUtils
     public static bool IsNullOrWhiteSpace(this string self)
     {
         return self == null || self.All(char.IsWhiteSpace);
+    }
+
+    public static void SpawnGeo(this HealthManager hm)
+    {
+        var num1 = hm.megaFlingGeo ? 65f : 80f;
+        var num2 = hm.megaFlingGeo ? 115f : 100f;
+        var num3 = hm.megaFlingGeo ? 30f : 15f;
+        var num4 = hm.megaFlingGeo ? 45f : 30f;
+        var smallGeoDrops = hm.smallGeoDrops;
+        var mediumGeoDrops = hm.mediumGeoDrops;
+        var largeGeoDrops = hm.largeGeoDrops;
+        var flag = false;
+        if (GameManager.instance.playerData.GetBool("equippedCharm_24") &&
+            !GameManager.instance.playerData.GetBool("brokenCharm_24"))
+        {
+            smallGeoDrops += Mathf.CeilToInt(smallGeoDrops * 0.2f);
+            mediumGeoDrops += Mathf.CeilToInt(mediumGeoDrops * 0.2f);
+            largeGeoDrops += Mathf.CeilToInt(largeGeoDrops * 0.2f);
+            flag = true;
+        }
+
+        var config = new FlingUtils.Config
+        {
+            Prefab = hm.smallGeoPrefab,
+            AmountMin = smallGeoDrops,
+            AmountMax = smallGeoDrops,
+            SpeedMin = num3,
+            SpeedMax = num4,
+            AngleMin = num1,
+            AngleMax = num2
+        };
+        var gameObjects1 = FlingUtils.SpawnAndFling(config, hm.transform, hm.effectOrigin);
+        if (flag) hm.SetGeoFlashing(gameObjects1, hm.smallGeoDrops);
+        
+        config = new FlingUtils.Config
+        {
+            Prefab = hm.mediumGeoPrefab,
+            AmountMin = mediumGeoDrops,
+            AmountMax = mediumGeoDrops,
+            SpeedMin = num3,
+            SpeedMax = num4,
+            AngleMin = num1,
+            AngleMax = num2
+        };
+        var gameObjects2 = FlingUtils.SpawnAndFling(config, hm.transform, hm.effectOrigin);
+        if (flag) hm.SetGeoFlashing(gameObjects2, hm.mediumGeoDrops);
+        
+        config = new FlingUtils.Config
+        {
+            Prefab = hm.largeGeoPrefab,
+            AmountMin = largeGeoDrops,
+            AmountMax = largeGeoDrops,
+            SpeedMin = num3,
+            SpeedMax = num4,
+            AngleMin = num1,
+            AngleMax = num2
+        };
+        var gameObjects3 = FlingUtils.SpawnAndFling(config, hm.transform, hm.effectOrigin);
+        if (flag) hm.SetGeoFlashing(gameObjects3, hm.largeGeoDrops);
     }
 }

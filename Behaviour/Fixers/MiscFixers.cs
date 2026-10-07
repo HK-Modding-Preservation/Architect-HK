@@ -1043,4 +1043,11 @@ public static class MiscFixers
         fsm.GetState("Initiate").AddAction(() => hits.Value = value.Value, 0);
         hit.AddAction(() => value.Value = hits.Value, 4);
     }
+
+    public static void FixDreamer(GameObject obj)
+    {
+        var fsm = obj.LocateMyFSM("Control");
+        fsm.GetState("Wound Start").DisableAction(10);
+        fsm.GetState("All Guardians Defeated").transitions = [];
+    }
 }

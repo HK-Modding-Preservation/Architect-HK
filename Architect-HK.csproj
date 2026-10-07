@@ -4,13 +4,13 @@
     <TargetFramework>net472</TargetFramework>
     <AssemblyName>Architect_HK</AssemblyName>
     <Product>Architect</Product>
-    <Version>3.37.3.4</Version>
+    <Version>3.38.0.0</Version>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <LangVersion>preview</LangVersion>
     <Nullable>disable</Nullable>
     <RootNamespace>Architect</RootNamespace>
     <!-- Path to DLL references required to build mod -->
-    <LocalRefs>/Users/arunkapila/Documents/Hollow Knight Modded/hollow_knight.app/Contents/Resources/Data/Managed/</LocalRefs>
+    <LocalRefs>/Users/amykapila/Documents/Hollow Knight Modded/hollow_knight.app/Contents/Resources/Data/Managed/</LocalRefs>
     <!-- Path to Mods folder -->
     <ModsPath>$(LocalRefs)/Mods</ModsPath>
   </PropertyGroup>

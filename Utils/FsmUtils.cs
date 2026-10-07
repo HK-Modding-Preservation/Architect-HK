@@ -1,9 +1,6 @@
 using System;
 using HutongGames.PlayMaker;
 using Satchel;
-using Satchel.Futils;
-using SFCore.Utils;
-using FsmUtil = SFCore.Utils.FsmUtil;
 
 namespace Architect.Utils;
 
@@ -26,7 +23,7 @@ public static class FsmUtils
     
     public static T[] GetActionsOfType<T>(this FsmState state) where T : FsmStateAction
     {
-        return FsmUtil.GetActionsOfType<T>(state);
+        return state.GetActions<T>();
     }
 
     public static void ChangeTransition(this FsmState state, string eve, string toState)
@@ -58,7 +55,12 @@ public static class FsmUtils
     public static void AddAction(this FsmState state, FsmStateAction customAction, int index = -1)
     {
         if (index == -1) FsmUtil.AddAction(state, customAction);
-        else FsmUtil.InsertAction(state, customAction, index);
+        else state.InsertAction(customAction, index);
+    }
+    
+    public static void AddTransition(this FsmState state, string onEventName, string toStateName)
+    {
+        FsmUtil.AddTransition(state, onEventName, toStateName);
     }
 
     public class EveryFrameAction(Action method) : FsmStateAction
