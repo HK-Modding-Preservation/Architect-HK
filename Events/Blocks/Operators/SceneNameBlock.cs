@@ -24,6 +24,8 @@ public class GameplayBlock : ScriptBlock
 
     protected override IEnumerable<string> Inputs => ["SetGravity", "Save", "SaveQuit", "CloseGame"];
 
+    public string MenuStyle = string.Empty;
+
     protected override IEnumerable<(string, string)> InputVars =>
     [
         ("GravX", "Number"),
@@ -48,6 +50,9 @@ public class GameplayBlock : ScriptBlock
                 break;
             case "SaveQuit":
                 GameManager.instance.StartCoroutine(GameManager.instance.ReturnToMainMenu(GameManager.ReturnToMainMenuSaveModes.SaveAndContinueOnFail));
+                break;
+            case "SetMenuStyle":
+                GlobalArchitectData.Instance.MenuStyle = MenuStyle;
                 break;
             case "CloseGame":
                 Application.Quit();

@@ -52,7 +52,7 @@ public static class OperatorBlocks
         Category.World.RegisterBlock<RaycastBlock>("Raycast", ConfigGroup.Raycast);
         
         Category.World.RegisterHiddenBlock<SceneNameBlock>("Scene Name");
-        Category.World.RegisterBlock<GameplayBlock>("Gameplay");
+        Category.World.RegisterBlock<GameplayBlock>("Gameplay", ConfigGroup.Gameplay);
         
         Category.Logic.RegisterBlock<AndBlock>("And");
         Category.Logic.RegisterBlock<OrBlock>("Or");

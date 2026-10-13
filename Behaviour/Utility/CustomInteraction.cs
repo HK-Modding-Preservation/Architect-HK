@@ -1,10 +1,13 @@
 using System.Collections.Generic;
+using Architect.Content.Preloads;
+using Satchel;
 using UnityEngine;
 
 namespace Architect.Behaviour.Utility;
 
 public class CustomInteraction : MonoBehaviour
 {
+    private static GameObject _arrowPromptNew;
     private static readonly List<CustomInteraction> Interactable = [];
 
     public float xOffset;
@@ -38,6 +41,12 @@ public class CustomInteraction : MonoBehaviour
 
     public static void Init()
     {
+        PreloadManager.RegisterPreload(new BasicPreload("Crossroads_47", "RestBench", o =>
+        {
+            _arrowPromptNew = o.LocateMyFSM("Bench Control")
+                .GetAction<ShowPromptMarker>("In Range", 0).prefab.Value;
+        }));
+        
         ModHooks.HeroUpdateHook += () =>
         {
             if (HeroController.instance.controlReqlinquished) return;
@@ -79,7 +88,7 @@ public class CustomInteraction : MonoBehaviour
 
     public void GoUp()
     {
-        var obj = ArchitectPlugin.ArrowPromptNew.Spawn();
+        var obj = _arrowPromptNew.Spawn();
         obj.transform.position = transform.position + new Vector3(xOffset, yOffset + 2);
 
         _prompt = obj.GetComponent<PromptMarker>();

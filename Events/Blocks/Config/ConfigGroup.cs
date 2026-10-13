@@ -174,6 +174,14 @@ public static class ConfigGroup
         )
     ];
     
+    public static readonly List<ConfigType> Gameplay =
+    [
+        ConfigurationManager.RegisterConfigType(
+            new StringConfigType<GameplayBlock>("Menu Style", "gameplay_menu_style", 
+                (b, f) => b.MenuStyle = f.GetValue())
+        )
+    ];
+    
     public static readonly List<ConfigType> SpawnObject =
     [
         ConfigurationManager.RegisterConfigType(

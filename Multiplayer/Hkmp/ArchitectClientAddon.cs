@@ -31,6 +31,18 @@ public class ArchitectClientAddon : ClientAddon
     public override void Initialize(IClientApi clientApi)
     {
         API = clientApi;
+        
+        clientApi.ClientManager.ConnectEvent += () =>
+        {
+            CoopManager.Instance.LockType = EditorLockType.Unknown;
+            clientApi.NetClient.GetNetworkSender<PacketId>(this)
+                .SendSingleData(PacketId.LockEditor, new LockEditorPacketData());
+        };
+        
+        clientApi.ClientManager.DisconnectEvent += () =>
+        {
+            CoopManager.Instance.LockType = EditorLockType.Unlocked;
+        };
 
         var netReceiver = clientApi.NetClient.GetNetworkReceiver<PacketId>(this,
             id => id.GetData());
@@ -42,6 +54,7 @@ public class ArchitectClientAddon : ClientAddon
         netReceiver.RegisterPacketHandler<EventPacketData>(PacketId.Event, HandleEvent);
         netReceiver.RegisterPacketHandler<MovePacketData>(PacketId.Move, HandleMove);
         netReceiver.RegisterPacketHandler<TilePacketData>(PacketId.Tiles, HandleTiles);
+        netReceiver.RegisterPacketHandler<LockEditorPacketData>(PacketId.LockEditor, HandleLockEditor);
         
         _updateManagerProperty = API.NetClient.GetType().GetProperty("UpdateManager");
         _setEnterSceneData = _updateManagerProperty!.PropertyType.GetMethod("SetEnterSceneData");
@@ -152,6 +165,13 @@ public class ArchitectClientAddon : ClientAddon
         
         if (packet.SceneName == GameManager.instance.sceneName) toggle.Execute();
         else toggle.Execute(packet.SceneName);
+    }
+
+    private static void HandleLockEditor(LockEditorPacketData packet)
+    {
+        ArchitectPlugin.Instance.Log("Receiving Editor Lock Packet");
+        CoopManager.Instance.LockType = packet.LockType;
+        if (packet.LockType == EditorLockType.Locked) EditManager.ToggleEditor(false);
     }
 
     private static void HandleMove(MovePacketData packet)

@@ -128,6 +128,11 @@ public class HkmpManager : CoopManager
         }
     }
 
+    public override void ShowMessage(string message)
+    {
+        _clientAddon.API.UiManager.ChatBox.AddMessage(message);
+    }
+
     public override void RefreshRoom()
     {
         _clientAddon.RefreshRoom();

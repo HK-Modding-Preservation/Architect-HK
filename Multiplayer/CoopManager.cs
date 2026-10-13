@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Architect.Editor;
 using Architect.Multiplayer.Hkmp;
 using Architect.Placements;
 using UnityEngine;
@@ -15,8 +16,25 @@ public abstract class CoopManager
         Instance = new DummyManager();
 
         if (!Settings.CoopMode.Value) return;
-        
+
         if (ModHooks.GetMod("HKMP") is Mod) HkmpManagerInitializer.Init();
+        
+        EditManager.ToggleChecks.Add(() =>
+        {
+            switch (Instance.LockType)
+            {
+                case EditorLockType.Unknown:
+                    Instance.ShowMessage("Cannot toggle edit mode yet, waiting for server info");
+                    return false;
+                case EditorLockType.Locked:
+                    Instance.ShowMessage("You do not have permission to toggle edit mode in this server");
+                    return false;
+                case EditorLockType.Unlocked:
+                case EditorLockType.AdminsOnly:
+                default:
+                    return true;
+            }
+        });
     }
 
     public abstract string Name { get; }
@@ -38,6 +56,10 @@ public abstract class CoopManager
     public abstract void ShareScene(string room, bool scriptOnly, LevelData data);
     
     public abstract void RefreshRoom();
+    
+    public abstract void ShowMessage(string message);
+
+    public EditorLockType LockType = EditorLockType.Unlocked;
     
     public abstract void ShareEvent(string room, string name);
 }

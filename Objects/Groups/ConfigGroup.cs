@@ -130,6 +130,11 @@ public static class ConfigGroup
                 o.GetComponent<GradeMarker>().maxIntensityRadius = value.GetValue();
             }).WithDefaultValue(0)),
         ConfigurationManager.RegisterConfigType(
+            new IntConfigType("Priority", "grade_marker_priority", (o, value) =>
+            {
+                o.GetComponent<CustomGradeMarker>().priority = value.GetValue();
+            }).WithDefaultValue(1)),
+        ConfigurationManager.RegisterConfigType(
             new BoolConfigType("Start Active", "grade_marker_start", (o, value) =>
             {
                 o.GetComponent<GradeMarker>().enableGrade = value.GetValue();

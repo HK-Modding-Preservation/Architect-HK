@@ -24,7 +24,6 @@ using Architect.Workshop;
 using Architect.Workshop.Items;
 using ItemChanger;
 using Newtonsoft.Json;
-using Satchel;
 using Satchel.BetterMenus;
 using UnityEngine;
 using Object = UnityEngine.Object;
@@ -42,8 +41,6 @@ public class ArchitectPlugin : Mod,
 
     public static readonly Sprite BlankSprite = ResourceUtils.LoadSpriteResource("blank", ppu:300);
 
-    public static GameObject ArrowPromptNew;
-    
     public override List<(string, string)> GetPreloadNames()
     {
         Instance = this;
@@ -116,7 +113,7 @@ public class ArchitectPlugin : Mod,
             Log("Error porting DcM map");
         }
         
-        return [("Crossroads_47", "RestBench")];
+        return [];
     }
 
     public override string GetVersion()
@@ -144,9 +141,6 @@ public class ArchitectPlugin : Mod,
         {
             ItemChangerMod.CreateSettingsProfile(false, false);
         };
-
-        ArrowPromptNew = preloadedObjects["Crossroads_47"]["RestBench"].LocateMyFSM("Bench Control")
-            .GetAction<ShowPromptMarker>("In Range", 0).prefab.Value;
     }
 
     public static void PreloadingDone()

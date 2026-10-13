@@ -34,6 +34,8 @@ public abstract class ScriptBlock
         "Flowcharts.output", ppu: 15, filterMode: FilterMode.Point
     );
 
+    public int Layer;
+
     protected virtual IEnumerable<string> Inputs => [];
     protected virtual IEnumerable<string> Outputs => [];
     protected virtual IEnumerable<(string, string)> OutputVars => [];
@@ -496,10 +498,26 @@ public abstract class ScriptBlock
         private List<(ScriptBlockInstance inst, Vector2 offset)> _groupOffsets;
         private Vector2 _groupStartMouse;
 
+        private string _setText;
+        private bool _selected;
+
         private void Update()
         {
-            if (text) text.text = Block.Name;
-            img.color = ScriptManager.IsSelected(Block.BlockId) ? Color.Lerp(Block.Color, Settings.ScriptEditorBlockSelectedLerpColor.Value, 0.35f) : Block.Color;
+            var setText = Block.Name;
+            if (_setText != setText && text)
+            {
+                _setText = setText;
+                text.text = _setText;
+            }
+            
+            var selected = ScriptManager.IsSelected(Block.BlockId);
+            if (_selected != selected)
+            {
+                _selected = selected;
+                img.color = _selected
+                    ? Color.Lerp(Block.Color, Settings.ScriptEditorBlockSelectedLerpColor.Value, 0.35f)
+                    : Block.Color;
+            }
         }
 
         public void OnDrag(PointerEventData eventData)
@@ -572,6 +590,29 @@ public abstract class ScriptBlock
                 return;
             }
             ActionManager.ScriptActionManager.PerformAction(Block.Delete());
+        }
+
+        public void LayerChanged(int value)
+        {
+            var active = Block.Layer == value;
+            
+            gameObject.SetActive(active);
+            
+            var sourceBlock = Block.BlockId;
+            foreach (var (sourceEvent, connections) in Block.EventMap)
+            {
+                foreach (var (block, trigger) in connections)
+                {
+                    if (ScriptManager.Links.TryGetValue((sourceBlock, sourceEvent, block, trigger), out var link))
+                        link.SetActive(active);
+                }
+            }
+
+            foreach (var (sourceVar, (block, connection)) in Block.VarMap)
+            {
+                if (ScriptManager.Links.TryGetValue((sourceBlock, sourceVar, block, connection), out var link))
+                    link.SetActive(active);
+            }
         }
     }
 
@@ -679,6 +720,9 @@ public abstract class ScriptBlock
             
             writer.WritePropertyName("type");
             writer.WriteValue(value.Type);
+            
+            writer.WritePropertyName("layer");
+            writer.WriteValue(value.Layer);
 
             if (value.CurrentConfig.Count > 0)
             {
@@ -699,6 +743,7 @@ public abstract class ScriptBlock
             JsonSerializer serializer)
         {
             string type = null;
+            var layer = 0;
             string blockId = null;
             Vector3 pos = default;
             Dictionary<string, List<(string, string)>> eventMap = [];
@@ -714,6 +759,10 @@ public abstract class ScriptBlock
                     case "type":
                         reader.ReadAsString();
                         type = reader.Value as string;
+                        break;
+                    case "layer":
+                        reader.ReadAsInt32();
+                        layer = (int)reader.Value;
                         break;
                     case "block_id":
                         reader.ReadAsString();
@@ -750,6 +799,7 @@ public abstract class ScriptBlock
             o.EventMap = eventMap;
             o.VarMap = varMap;
             o.CurrentConfig = config;
+            o.Layer = layer;
             return o;
         }
 

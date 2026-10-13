@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Architect.Behaviour.Custom;
+using Architect.Behaviour.Fixers;
 using Architect.Behaviour.Utility;
 using Architect.Objects.Categories;
 using Architect.Objects.Groups;
@@ -41,8 +42,10 @@ public static class UtilityObjects
         Categories.Utility.Add(CreateFsmHook());
         Categories.Utility.Add(CreateComponentToggler());
 
+        CustomGradeMarker.Init();
         Categories.Utility.Add(new PreloadObject("Grade Marker", "grade_marker",
                 ("Tutorial_01", "_Markers/GradeMarker"),
+                preloadAction: MiscFixers.AddComponent<CustomGradeMarker>,
                 sprite: ResourceUtils.LoadSpriteResource("grade_marker"))
             .WithConfigGroup(ConfigGroup.GradeMarker)
             .WithReceiverGroup(ReceiverGroup.GradeMarker));

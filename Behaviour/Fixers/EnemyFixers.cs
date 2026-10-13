@@ -1151,6 +1151,14 @@ public static class EnemyFixers
         tpDstab.AddAction(AdjustX, 0);
         fsm.GetState("TelePos SmallShot").AddAction(AdjustX, 0);
         fsm.GetState("Aim Jump").AddAction(AdjustX, 0);
+        
+        var land = fsm.GetState("Land");
+        land.DisableAction(3);
+        land.AddAction(() =>
+        {
+            if (stunLandY.Value > obj.transform.GetPositionY()) 
+                obj.transform.SetPositionY(stunLandY.Value);
+        });
 
         float left = 0;
         float right = 0;
