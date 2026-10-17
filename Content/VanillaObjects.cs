@@ -1075,6 +1075,33 @@ public static class VanillaObjects
             sprite: ResourceUtils.LoadSpriteResource("radiance_thick", ppu: 64))
             .WithConfigGroup(ConfigGroup.RadiancePlat)
             .WithReceiverGroup(ReceiverGroup.RadiancePlat));
+        
+        AddAttack("Radiant Orb", "radiant_orb", ("GG_Radiance", "Boss Control/Absolute Radiance"),
+            "Attack Commands", "Spawn Fireball", 1)
+            .WithConfigGroup(ConfigGroup.RadiantOrb)
+            .WithReceiverGroup(ReceiverGroup.RadiantOrb);
+        
+        AddAttack("Radiant Nail", "radiant_nail", ("GG_Radiance", "Boss Control/Absolute Radiance"),
+            "Attack Commands", "CW Spawn", 0,
+            postSpawnAction: o => 
+                o.LocateMyFSM("Control").GetState("Fan Ready").AddEvent("FAN ATTACK CW", -1))
+            .WithConfigGroup(ConfigGroup.RadiantNail)
+            .WithReceiverGroup(ReceiverGroup.RadiantNail)
+            .WithRotationGroup(RotationGroup.Eight);
+        
+        Categories.Attacks.Add(new PreloadObject("Radiant Beam", "radiant_beam", 
+                ("GG_Radiance", "Boss Control/Beam Sweeper"),
+                sprite: ResourceUtils.LoadSpriteResource("radiant_beam", pivot: new Vector2(0.5f, 0), ppu: 6.4f),
+                preloadAction: MiscFixers.AddComponent<MiscFixers.RadiantBeam>)
+            .WithConfigGroup(ConfigGroup.RadiantBeam)
+            .WithReceiverGroup(ReceiverGroup.RadiantBeam)
+            .WithInputGroup(InputGroup.RadiantBeam));
+        
+        Categories.Hazards.Add(new PreloadObject("Radiant Spike", "radiant_spike", 
+                ("GG_Radiance", "Boss Control/Spike Control/Centre/Radiant Spike (8)"),
+                preloadAction: o => Object.Destroy(o.LocateMyFSM("Hero Saver")))
+            .WithConfigGroup(ConfigGroup.RadiantSpike)
+            .WithReceiverGroup(ReceiverGroup.RadiantSpike));
 
         AddSolid("Godhome Platform 1", "gg_plat_1", ("GG_Atrium_Roof", "gg_plat_float_small"));
         AddSolid("Godhome Platform 2", "gg_plat_2", ("GG_Workshop", "gg_plat_float_wide"));

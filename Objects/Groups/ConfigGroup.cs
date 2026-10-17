@@ -1851,6 +1851,92 @@ public static class ConfigGroup
         }).WithDefaultValue(true))
     ]);
 
+    public static readonly List<ConfigType> RadiantOrb = GroupUtils.Merge(Visible, [
+        ConfigurationManager.RegisterConfigType(new BoolConfigType("Fire on Start", "radiant_orb_fire", (o, value) =>
+        {
+            if (!value.GetValue()) return;
+            o.LocateMyFSM("Orb Control").GetState("Orbiting").AddEvent("FIRE");
+        }).WithDefaultValue(true)),
+        ConfigurationManager.RegisterConfigType(new FloatConfigType("Phasing Chase Time", "radiant_orb_ignore_wall_time", (o, value) =>
+        {
+            if (Mathf.Approximately(value.GetValue(), 0.5f)) return;
+            var ch = o.LocateMyFSM("Orb Control").GetState("Chase Hero");
+            ch.DisableAction(2);
+            ch.GetAction<Wait>(4).time = value.GetValue();
+        }).WithDefaultValue(0.5f)),
+        ConfigurationManager.RegisterConfigType(new FloatConfigType("Normal Chase Time", "radiant_orb_normal_time", (o, value) =>
+        {
+            if (Mathf.Approximately(value.GetValue(), 2.25f)) return;
+            o.LocateMyFSM("Orb Control").GetState("Chase Hero 2").GetAction<Wait>(3).time = value.GetValue();
+        }).WithDefaultValue(2.25f)),
+        ConfigurationManager.RegisterConfigType(new FloatConfigType("Max Chase Speed", "radiant_orb_chase_speed", (o, value) =>
+        {
+            if (Mathf.Approximately(value.GetValue(), 20)) return;
+            o.LocateMyFSM("Orb Control").GetState("Chase Hero").GetAction<ChaseObjectV2>(3).speedMax = value.GetValue();
+            o.LocateMyFSM("Orb Control").GetState("Chase Hero 2").GetAction<ChaseObjectV2>(4).speedMax = value.GetValue();
+        }).WithDefaultValue(20)),
+        ConfigurationManager.RegisterConfigType(new FloatConfigType("Acceleration", "radiant_orb_acceleration", (o, value) =>
+        {
+            if (Mathf.Approximately(value.GetValue(), 50)) return;
+            o.LocateMyFSM("Orb Control").GetState("Chase Hero").GetAction<ChaseObjectV2>(3).accelerationForce = value.GetValue();
+            o.LocateMyFSM("Orb Control").GetState("Chase Hero 2").GetAction<ChaseObjectV2>(4).accelerationForce = value.GetValue();
+        }).WithDefaultValue(50))
+    ]);
+
+    public static readonly List<ConfigType> RadiantNail = GroupUtils.Merge(Visible, [
+        ConfigurationManager.RegisterConfigType(new BoolConfigType("Fire on Start", "radiant_nail_fire", (o, value) =>
+        {
+            if (!value.GetValue()) return;
+            o.LocateMyFSM("Control").GetState("Set Collider").AddEvent("FAN ANTIC", -1);
+        }).WithDefaultValue(true)),
+        ConfigurationManager.RegisterConfigType(new FloatConfigType("Fire Speed", "radiant_nail_speed", (o, value) =>
+        {
+            if (Mathf.Approximately(value.GetValue(), 25)) return;
+            o.LocateMyFSM("Control").GetState("Fire CW").GetAction<SetVelocityAsAngle>(0).speed = value.GetValue();
+        }).WithDefaultValue(25)),
+        ConfigurationManager.RegisterConfigType(new FloatConfigType("Fire Angle", "radiant_nail_angle", (o, value) =>
+        {
+            o.LocateMyFSM("Control").GetState("Fire CW").GetAction<FloatAdd>(2).add = value.GetValue();
+        }).WithDefaultValue(0)),
+        ConfigurationManager.RegisterConfigType(new FloatConfigType("Flight Time", "radiant_nail_time", (o, value) =>
+        {
+            o.LocateMyFSM("Control").GetState("Fire CW").GetAction<Wait>(3).time = value.GetValue();
+        }).WithDefaultValue(10))
+    ]);
+
+    public static readonly List<ConfigType> RadiantBeam = GroupUtils.Merge(Visible, [
+        ConfigurationManager.RegisterConfigType(new Vector2ConfigType("Move Distance", "radiant_beam_distance", (o, value) =>
+        {
+            o.GetComponent<MiscFixers.RadiantBeam>().distance = value.GetValue();
+        }).WithDefaultValue(new Vector2(50, 0))),
+        ConfigurationManager.RegisterConfigType(new FloatConfigType("Speed", "radiant_beam_speed", (o, value) =>
+        {
+            var val = value.GetValue();
+            if (val == 0) val = 0.001f;
+            o.GetComponent<MiscFixers.RadiantBeam>().time = 1/val;
+        }).WithDefaultValue(0.2f))
+    ]);
+
+    public static readonly List<ConfigType> RadiantSpike = GroupUtils.Merge(Visible, [
+        ConfigurationManager.RegisterConfigType(new BoolConfigType("Start Up", "radiant_spike_start_up", (o, value) =>
+        {
+            if (!value.GetValue()) return;
+            var fsm = o.LocateMyFSM("Control");
+            var goneUp = false;
+            fsm.GetState("Downed").AddAction(() =>
+            {
+                if (goneUp) return;
+                goneUp = true;
+                fsm.SendEvent("UP");
+            });
+        }).WithDefaultValue(true)),
+        ConfigurationManager.RegisterConfigType(new FloatConfigType("Antic Time", "radiant_spike_antic_time", (o, value) =>
+        {
+            if (Mathf.Approximately(value.GetValue(), 2)) return;
+            o.LocateMyFSM("Control").GetState("Floor Antic").GetAction<Wait>(2).time = value.GetValue();
+        }).WithDefaultValue(2))
+    ]);
+
     public static readonly List<ConfigType> Elderbug = GroupUtils.Merge(Npcs, [
         ConfigurationManager.RegisterConfigType(new BoolConfigType("Has Flower", "elderbug_flower", (o, value) =>
         {

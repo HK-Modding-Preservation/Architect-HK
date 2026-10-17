@@ -19,17 +19,50 @@ public class TextDisplay : MonoBehaviour, IDisplayable
     
     public string text = "";
     
-    private static PlayMakerFSM NormalManager => 
-        field ??= GameObject.Find("_GameCameras/HudCamera/DialogueManager").LocateMyFSM("Box Open");
-    private static PlayMakerFSM DreamManager => 
-        field ??= GameObject.Find("_GameCameras/HudCamera/DialogueManager").LocateMyFSM("Box Open Dream");
-    private static PlayMakerFSM YnManager => 
-        field ??= GameObject.Find("_GameCameras/HudCamera/DialogueManager").LocateMyFSM("Box Open YN");
-    private DialogueBox DialogueBox => 
-        field ??= GameObject.Find("_GameCameras/HudCamera/DialogueManager/Text").GetComponent<DialogueBox>();
+    private static PlayMakerFSM NormalManager
+    {
+        get
+        {
+            if (!field) field = GameObject.Find("_GameCameras/HudCamera/DialogueManager").LocateMyFSM("Box Open");
+            return field;
+        }
+    }
+
+    private static PlayMakerFSM DreamManager 
+    {
+        get
+        {
+            if (!field) field = GameObject.Find("_GameCameras/HudCamera/DialogueManager").LocateMyFSM("Box Open Dream");
+            return field;
+        }
+    }
     
-    private DialogueBox YnDialogueBox => 
-        field ??= GameObject.Find("_GameCameras/HudCamera/DialogueManager/Text YN").GetComponent<DialogueBox>();
+    private static PlayMakerFSM YnManager 
+    {
+        get
+        {
+            if (!field) field = GameObject.Find("_GameCameras/HudCamera/DialogueManager").LocateMyFSM("Box Open YN");
+            return field;
+        }
+    }
+    
+    private DialogueBox DialogueBox
+    {
+        get
+        {
+            if (!field) field = GameObject.Find("_GameCameras/HudCamera/DialogueManager/Text").GetComponent<DialogueBox>();
+            return field;
+        }
+    }
+    
+    private DialogueBox YnDialogueBox
+    {
+        get
+        {
+            if (!field) field = GameObject.Find("_GameCameras/HudCamera/DialogueManager/Text YN").GetComponent<DialogueBox>();
+            return field;
+        }
+    }
 
     public static void Init()
     {

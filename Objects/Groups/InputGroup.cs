@@ -21,6 +21,8 @@ public static class InputGroup
     
     public static readonly List<(string, string)> Feather = [("Rotation", "Number")];
     
+    public static readonly List<(string, string)> RadiantBeam = [("Move X", "Number"), ("Move Y", "Number")];
+    
     public static readonly List<(string, string)> TriggerZone = [("Layer", "Number")];
     
     public static readonly List<(string, string)> ComponentHook = [("New Value", "Any")];

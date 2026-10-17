@@ -48,6 +48,7 @@ public class PlayerBlock : ToggleableBlock
         return id switch
         {
             "Ground" => !HeroController.instance.cState.onGround,
+            "HasControl" => !HeroController.instance.controlReqlinquished,
             "Left" => !HeroController.instance.cState.facingRight,
             "Right" => HeroController.instance.cState.facingRight,
             "Up" => HeroController.instance.cState.lookingUp,
@@ -191,6 +192,7 @@ public class StateBlock : PlayerBlock
 
     protected override IEnumerable<(string, string)> OutputVars => [
         ("Ground", "Boolean"),
+        ("HasControl", "Boolean"),
         ("Left", "Boolean"),
         ("Right", "Boolean"),
         ("Up", "Boolean"),

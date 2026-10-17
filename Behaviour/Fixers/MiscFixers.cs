@@ -1,15 +1,18 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 using Architect.Behaviour.Custom;
 using Architect.Content.Preloads;
+using Architect.Events.Blocks;
 using Architect.Events.Blocks.Operators;
 using GlobalEnums;
 using HutongGames.PlayMaker;
 using HutongGames.PlayMaker.Actions;
 using Satchel.Futils;
 using UnityEngine;
+using Object = UnityEngine.Object;
 
 namespace Architect.Behaviour.Fixers;
 
@@ -1049,5 +1052,40 @@ public static class MiscFixers
         var fsm = obj.LocateMyFSM("Control");
         fsm.GetState("Wound Start").DisableAction(10);
         fsm.GetState("All Guardians Defeated").transitions = [];
+    }
+
+    public class RadiantBeam : MonoBehaviour
+    {
+        public Vector3 distance = new(50, 0);
+        public float time = 5;
+        
+        private PlayMakerFSM _fsm;
+        private iTweenMoveBy _moveBy;
+
+        private void Awake()
+        {
+            _fsm = GetComponent<PlayMakerFSM>();
+
+            var sweep = _fsm.GetState("Beam Sweep L 2");
+
+            var sp = sweep.GetAction<SetPosition>(4);
+            sp.x = transform.GetPositionX();
+            sp.y = transform.GetPositionY();
+            _moveBy = sweep.GetAction<iTweenMoveBy>(6);
+        }
+
+        public void Move(ScriptBlock block)
+        {
+            var move = new Vector3(
+                block?.GetVariable<float>("Move X", distance.x) ?? distance.x,
+                block?.GetVariable<float>("Move Y", distance.y) ?? distance.y
+            );
+            _moveBy.vector = move;
+            _moveBy.time = time * move.magnitude / 50;
+            
+            _fsm.SendEvent("BEAM SWEEP L2");
+        }
+
+        public void Stop() => _fsm.SendEvent("FINISHED");
     }
 }

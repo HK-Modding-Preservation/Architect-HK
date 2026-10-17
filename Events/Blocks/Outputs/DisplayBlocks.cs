@@ -109,8 +109,15 @@ public class ThoughtBlock : ScriptBlock
         Text = "";
     }
     
-    private static PlayMakerFSM DreamDialogue => field ??= GameCameras.instance.hudCamera.transform
-        .Find("DialogueManager").Find("Dream Msg").gameObject.LocateMyFSM("Display");
+    private static PlayMakerFSM DreamDialogue
+    {
+        get
+        {
+            if (!field) field = GameCameras.instance.hudCamera.transform
+                .Find("DialogueManager").Find("Dream Msg").gameObject.LocateMyFSM("Display");
+            return field;
+        }
+    }
 
     protected override void Trigger(string trigger)
     {

@@ -338,6 +338,42 @@ public static class ReceiverGroup
         }))
     ]);
     
+    public static readonly List<EventReceiverType> RadiantOrb = GroupUtils.Merge(Generic, [
+        EventManager.RegisterReceiverType(new EventReceiverType("radiant_orb_dissipate", "Dissipate", o =>
+        {
+            o.LocateMyFSM("Orb Control").SendEvent("DISSIPATE");
+        })),
+        EventManager.RegisterReceiverType(new EventReceiverType("radiant_orb_fire", "Fire", o =>
+        {
+            o.LocateMyFSM("Orb Control").SendEvent("FIRE");
+        }))
+    ]);
+    
+    public static readonly List<EventReceiverType> RadiantNail = GroupUtils.Merge(Generic, [
+        EventManager.RegisterReceiverType(new EventReceiverType("radiant_nail_fire", "Fire", o =>
+        {
+            o.LocateMyFSM("Control").SendEvent("FAN ANTIC");
+        }))
+    ]);
+    
+    public static readonly List<EventReceiverType> RadiantBeam = GroupUtils.Merge(Generic, [
+        EventManager.RegisterReceiverType(new EventReceiverType("radiant_beam_sweep", "Sweep", (o, b) =>
+        {
+            o.GetComponent<MiscFixers.RadiantBeam>().Move(b);
+        }))
+    ]);
+    
+    public static readonly List<EventReceiverType> RadiantSpike = GroupUtils.Merge(Generic, [
+        EventManager.RegisterReceiverType(new EventReceiverType("radiant_spike_up", "Up", o =>
+        {
+            o.LocateMyFSM("Control").SendEvent("UP");
+        })),
+        EventManager.RegisterReceiverType(new EventReceiverType("radiant_spike_down", "Down", o =>
+        {
+            o.LocateMyFSM("Control").SendEvent("DOWN");
+        }))
+    ]);
+    
     public static readonly List<EventReceiverType> FsmHook = GroupUtils.Merge(Generic, [
         EventManager.RegisterReceiverType(new EventReceiverType("fsm_set_state", "SetState", o =>
         {
@@ -382,7 +418,7 @@ public static class ReceiverGroup
         {
             if (b == null) return;
             o.GetComponent<DamageEnemies>().damageDealt = (int)b.GetVariable<float>("New Damage");
-        }))
+        }, true))
     ]);
     
     public static readonly List<EventReceiverType> ObjectSpinner = GroupUtils.Merge(Generic, [

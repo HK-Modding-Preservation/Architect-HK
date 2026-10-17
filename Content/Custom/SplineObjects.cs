@@ -63,7 +63,14 @@ public static class SplineObjects
     public class SplinePoint : MonoBehaviour
     {
         public string id = "1";
-        public Spline Spline => field ??= Splines.TryGetValue(id, out var spline) ? spline : null;
+        public Spline Spline
+        {
+            get
+            {
+                if (!field) field = Splines.TryGetValue(id, out var spline) ? spline : null;
+                return field;
+            }
+        }
 
         protected Vector3 Pos;
 

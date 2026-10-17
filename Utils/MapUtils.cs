@@ -465,7 +465,14 @@ public static class MapUtils
 
         [CanBeNull] public SceneGroup CustomGroup;
 
-        private GameObject Obj => field ??= EventTarget.gameObject.gameObject.value;
+        private GameObject Obj
+        {
+            get
+            {
+                if (!field) field = EventTarget.gameObject.gameObject.value;
+                return field;
+            }
+        }
 
         public bool IsAvailable() => Obj.activeSelf;
 

@@ -15,9 +15,16 @@ public class TravelBlock : CollectionBlock<TravelBlock.TravelItemBlock>
     protected override string ChildName => "Travel Item";
     protected override bool NeedsGap => true;
 
-    private static GameObject Prefab => field ??= ((CreateObject)GameCameras.instance.hudCamera.transform.Find("Menus")
-        .gameObject.LocateMyFSM("Open Stag").GetState("Spawn Stag Map").Actions[0]).gameObject.Value;
-    
+    private static GameObject Prefab
+    {
+        get
+        {
+            if (!field) field = ((CreateObject)GameCameras.instance.hudCamera.transform.Find("Menus")
+                .gameObject.LocateMyFSM("Open Stag").GetState("Spawn Stag Map").Actions[0]).gameObject.Value;
+            return field;
+        }
+    }
+
     protected override void Trigger(string trigger)
     {
         ArchitectPlugin.Instance.StartCoroutine(Coroutine());
