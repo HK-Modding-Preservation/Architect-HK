@@ -1116,6 +1116,18 @@ public static class VanillaObjects
         AddFlamebearerEnemy("Grimmkin Novice", "grimmkin_novice", "Ruins1_28", 1);
         AddFlamebearerEnemy("Grimmkin Master", "grimmkin_master", "Tutorial_01", 2);
         AddFlamebearerEnemy("Grimmkin Nightmare", "grimmkin_nightmare", "Fungus2_30", 3);
+        
+        AddAttack("Fireball", "grimm_fireball", 
+            ("Grimm_Main_Tent_boss", "Grimm Boss"),
+            "Control", "Fire Low R", 0)
+            .WithConfigGroup(ConfigGroup.Velocity)
+            .WithInputGroup(InputGroup.Velocity)
+            .WithReceiverGroup(ReceiverGroup.Velocity);
+
+        AddAttack("Fire Pillar", "grimm_pillar", 
+            ("Grimm_Nightmare", "Grimm Control/Nightmare Grimm Boss"),
+            "Control", "Pillar", 0)
+            .WithRotationGroup(RotationGroup.Eight);
 
         AddEnemy("Troupe Master Grimm", "troupe_master_grimm",
             ("Grimm_Main_Tent_boss", "Grimm Boss"),
