@@ -22,6 +22,7 @@ using Architect.Storage;
 using Architect.Updater;
 using Architect.Workshop;
 using Architect.Workshop.Items;
+using GlobalEnums;
 using ItemChanger;
 using Newtonsoft.Json;
 using Satchel.BetterMenus;
@@ -231,6 +232,19 @@ public class ArchitectPlugin : Mod,
             CursorManager.Update();
             SharerManager.Update();
             AbilityObjects.Update();
+
+            if (Settings.FixLoad.IsPressed && GameManager.instance.gameState == GameState.ENTERING_LEVEL)
+            {
+                GameManager.instance.StartCoroutine(
+                    HeroController.instance.EnterScene(GetFirstGate(), 0)
+                );
+            }
+        }
+
+        private static TransitionPoint GetFirstGate()
+        {
+            return UnityEngine.SceneManagement.SceneManager.GetActiveScene().GetRootGameObjects()
+                .SelectMany(o => o.GetComponentsInChildren<TransitionPoint>()).FirstOrDefault();
         }
     }
 

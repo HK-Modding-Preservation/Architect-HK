@@ -2520,4 +2520,75 @@ public static class EnemyFixers
         var main = obj.transform.Find("Pt Break").GetComponent<ParticleSystem>().main;
         main.playOnAwake = false;
     }
+
+    public static void FixMantisLord(GameObject obj)
+    {
+        var fsm = obj.LocateMyFSM("Mantis Lord");
+        
+        fsm.GetState("Start Pause").AddEvent("FINISHED");
+        fsm.GetState("Idle").AddEvent("FINISHED");
+        fsm.GetState("Shift Y?").AddEvent("FINISHED");
+        
+        var dashL = fsm.FsmVariables.FindFsmFloat("Dash X L");
+        var dstabXMin = fsm.FsmVariables.FindFsmFloat("Dstab X Min");
+        var wallL = fsm.FsmVariables.FindFsmFloat("Wall X L");
+        var dashR = fsm.FsmVariables.FindFsmFloat("Dash X R");
+        var dstabXMax = fsm.FsmVariables.FindFsmFloat("Dstab X Max");
+        var wallR = fsm.FsmVariables.FindFsmFloat("Wall X R");
+        
+        var dashY = fsm.FsmVariables.FindFsmFloat("Dash Y");
+        var dstabY = fsm.FsmVariables.FindFsmFloat("Dstab Y");
+        var landY = fsm.FsmVariables.FindFsmFloat("Land Y");
+        
+        var udRf = fsm.GetState("Pos UD").GetAction<RandomFloat>(0);
+        var duRf = fsm.GetState("Pos DU").GetAction<RandomFloat>(0);
+        var throwDMin = duRf.min;
+        var throwDMax = duRf.max;
+        var throwUMin = udRf.min;
+        var throwUMax = udRf.max;
+        
+        fsm.GetState("Dash Dir").DisableActions(1, 2);
+        fsm.GetState("Attack Choice").DisableActions(2, 3, 4);
+        fsm.GetState("Throw Pos").DisableActions(3, 4, 5);
+        
+        fsm.GetState("Attack Choice").AddAction(Adjust, 0);
+        var adjustEveryFrame = new FsmUtils.EveryFrameAction(Adjust);
+        fsm.GetState("Dstab Attack").AddAction(adjustEveryFrame, 0);
+        
+        Adjust();
+
+        return;
+
+        void Adjust()
+        {
+            var objPos = obj.transform.position;
+            var heroPos = HeroController.instance.transform.position;
+            if (heroPos.y > objPos.y) objPos.y = heroPos.y;
+            
+            var cast = Physics2D.Raycast(objPos, Vector2.down, 40, TerrainMask);
+            var y = (cast ? cast.point.y : obj.transform.GetPositionY() - 40) + 2.99f;
+
+            dashY.Value = y + 1.29f;
+            dstabY.Value = y + 7.97f;
+            landY.Value = y;
+            throwDMin.Value = y + 0.51f;
+            throwDMax.Value = y + 1.01f;
+            throwUMin.Value = y + 2.51f;
+            throwUMax.Value = y + 3.51f;
+            
+            var leftCast = Physics2D.Raycast(heroPos, Vector2.left, 30, TerrainMask);
+            var left = leftCast ? leftCast.point.x : obj.transform.GetPositionX() - 30;
+
+            dashL.Value = left + 4.1f;
+            dstabXMin.Value = left + 3.3f;
+            wallL.Value = left + 1.24f;
+
+            var rightCast = Physics2D.Raycast(heroPos, Vector2.right, 30, TerrainMask);
+            var right = rightCast ? rightCast.point.x : obj.transform.GetPositionX() + 30;
+
+            dashR.Value = right - 4.1f;
+            dstabXMax.Value = right - 3.3f;
+            wallR.Value = right - 1.24f;
+        }
+    }
 }

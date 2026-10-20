@@ -34,6 +34,8 @@ public static class Settings
     public static Keybind SaveHotbar;
     public static Keybind LoadHotbar;
     
+    public static Keybind FixLoad;
+    
     public static Keybind Blank;
     public static Keybind Cursor;
     public static Keybind Drag;
@@ -241,6 +243,13 @@ public static class Settings
             "LoadHotbar",
             Key.LeftAlt,
             "Loads a saved hotbar when held with a number."
+        ));
+        
+        FixLoad = new Keybind(Bind(
+            "Keybinds",
+            "FixSceneLoad",
+            Key.Slash,
+            "Fixes a failed scene load from an invalid target door"
         ));
         
         Blank = new Keybind(Bind(

@@ -479,6 +479,10 @@ public static class VanillaObjects
             .WithConfigGroup(ConfigGroup.Water);
         Categories.Platforming.Add(acid);
         Categories.Hazards.Add(acid);
+
+        AddEnemy("Mantis Lord", "mantis_lord",
+            ("GG_Mantis_Lords", "Mantis Battle/Battle Main/Mantis Lord"),
+            postSpawnAction: EnemyFixers.FixMantisLord);
     }
 
     private static void AddDeepnestObjects()

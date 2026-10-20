@@ -25,6 +25,22 @@ public static class ParticleObjects
             .WithInputGroup(InputGroup.Particles)
             .WithReceiverGroup(ReceiverGroup.Particles));
         
+        Categories.Effects.Add(new PreloadObject("Dust Effect", "dust_effect",
+            ("Deepnest_East_16", "Giant Hopper Summon/Antic Dust 1"),
+            preloadAction: MiscFixers.AddComponent<ParticleObject>,
+            sprite: ResourceUtils.LoadSpriteResource("dust_particles"))
+            .WithConfigGroup(Particle)
+            .WithInputGroup(InputGroup.Particles)
+            .WithReceiverGroup(ReceiverGroup.Particles));
+        
+        Categories.Effects.Add(new PreloadObject("Rocks Effect", "rocks_effect",
+            ("Deepnest_East_16", "Giant Hopper Summon/Antic Rocks 1"),
+            preloadAction: MiscFixers.AddComponent<ParticleObject>,
+            sprite: ResourceUtils.LoadSpriteResource("rock_particles"))
+            .WithConfigGroup(Particle)
+            .WithInputGroup(InputGroup.Particles)
+            .WithReceiverGroup(ReceiverGroup.Particles));
+        
         Categories.Effects.Add(new PreloadObject("Damaging Falling Crystals", "falling_crystals_dmg",
             ("Mines_31", "Pt Crystal Dropping (13)"),
             preloadAction: MiscFixers.AddComponent<ParticleObject>,
