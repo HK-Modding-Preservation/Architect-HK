@@ -1,10 +1,44 @@
 using System.Collections.Generic;
+using System.Linq;
+using GlobalEnums;
+using TeamCherry;
 using UnityEngine;
 
 namespace Architect.Behaviour.Utility;
 
 public class CustomGradeMarker : MonoBehaviour
 {
+    public MapZone mapZone = MapZone.NONE;
+
+    public bool setAmbientColour;
+    public bool setAmbientIntensity;
+    public bool setHeroLight;
+    public bool setSaturation;
+
+    public bool custom;
+
+    private void Start()
+    {
+        if (!custom) return;
+        
+        var references = Resources.Load<References>("ReferencesData");
+        var settings = references.sceneDefaultSettings.settingsList
+            .FirstOrDefault(o => o.mapZone == mapZone);
+        if (settings == null) return;
+        
+        Resources.UnloadAsset(references);
+
+        var gm = GetComponent<GradeMarker>();
+        
+        if (setSaturation) gm.saturation = settings.saturation;
+        if (setHeroLight) gm.heroLightColor = settings.heroLightColor;
+        if (setAmbientIntensity) gm.ambientIntensity = settings.defaultIntensity;
+        if (setAmbientColour) gm.ambientColor = settings.defaultColor;
+        gm.redChannel = new AnimationCurve(settings.redChannel.keys);
+        gm.blueChannel = new AnimationCurve(settings.blueChannel.keys);
+        gm.greenChannel = new AnimationCurve(settings.greenChannel.keys);
+    }
+
     private static readonly List<GradeMarker> GradeMarkers = [];
     
     public int priority;

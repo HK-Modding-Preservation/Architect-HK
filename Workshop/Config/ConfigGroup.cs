@@ -1,7 +1,9 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Architect.Workshop.Items;
 using Architect.Workshop.Types;
+using GlobalEnums;
 using UnityEngine;
 
 namespace Architect.Workshop.Config;
@@ -64,19 +66,58 @@ public static class ConfigGroup
             {
                 item.Environment = value.GetValue();
             }).WithOptions("Dust", "Grass", "Bone", "Spa", "Metal", "None", "Wet").WithDefaultValue(0)
-        ),
+        )
+    ];
+    
+    public static readonly List<ConfigType> SceneLighting = [
+        ConfigurationManager.RegisterConfigType(
+            new StringConfigType<CustomScene>("Base Settings ID", "grade_marker_base", (o, value) =>
+            {
+                if (Enum.TryParse<MapZone>(value.GetValue(), out var zone))
+                    o.MapZone = zone;
+            }).WithDefaultValue("NONE")),
+        ConfigurationManager.RegisterConfigType(
+            new BoolConfigType<CustomScene>("Override Hero Light", "grade_marker_hero_override", (o, value) =>
+            {
+                if (value.GetValue()) return;
+                o.SetHeroLight = true;
+            }).WithDefaultValue(true)),
         ConfigurationManager.RegisterConfigType(
             new ColourConfigType<CustomScene>("Hero Light", "scene_hero_light", (item, value) =>
             {
                 item.HeroLight = value.GetValue();
-            }, false).WithDefaultValue(Color.white)
+            }, true).WithDefaultValue(Color.white)
         ),
+        ConfigurationManager.RegisterConfigType(
+            new BoolConfigType<CustomScene>("Override A. Light", "grade_marker_ambient_override", (o, value) =>
+            {
+                if (value.GetValue()) return;
+                o.SetAmbientColour = true;
+            }).WithDefaultValue(true)),
         ConfigurationManager.RegisterConfigType(
             new ColourConfigType<CustomScene>("Ambient Light", "scene_ambient_light", (item, value) =>
             {
                 item.AmbientLight = value.GetValue();
             }, false).WithDefaultValue(Color.white)
         ),
+        ConfigurationManager.RegisterConfigType(
+            new BoolConfigType<CustomScene>("Override A. Intensity", "grade_marker_ambient_intensity_override", (o, value) =>
+            {
+                if (value.GetValue()) return;
+                o.SetAmbientIntensity = true;
+            }).WithDefaultValue(true)),
+        ConfigurationManager.RegisterConfigType(
+            new FloatConfigType<CustomScene>("Ambient Intensity", "scene_ambient_intensity", (item, value) =>
+            {
+                item.AmbientIntensity = value.GetValue();
+            }).WithDefaultValue(0.72f)
+        ),
+        ConfigurationManager.RegisterConfigType(
+            new BoolConfigType<CustomScene>("Override Saturation", "grade_marker_saturation_override", (o, value) =>
+            {
+                if (value.GetValue()) return;
+                o.SetSaturation = true;
+            }).WithDefaultValue(true)),
         ConfigurationManager.RegisterConfigType(
             new FloatConfigType<CustomScene>("Saturation", "scene_saturation", (item, value) =>
             {

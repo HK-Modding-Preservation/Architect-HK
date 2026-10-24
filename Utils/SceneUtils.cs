@@ -15,6 +15,7 @@ using Mono.Cecil.Cil;
 using MonoMod.Cil;
 using MonoMod.RuntimeDetour;
 using MonoMod.Utils;
+using TeamCherry;
 using tk2dRuntime.TileMap;
 using UnityEngine;
 using UnityEngine.Audio;
@@ -227,7 +228,34 @@ public static class SceneUtils
         USceneManager.SetActiveScene(scene);
         FsmHook.FsmMaster.OnSceneLoaded(scene, LoadSceneMode.Single);
         
-        CreateGradeMarker(info.HeroLight, info.AmbientLight, info.Saturation);
+        // Get colour data for grade marker
+        var references = Resources.Load<References>("ReferencesData");
+        var settings = references.sceneDefaultSettings.settingsList
+            .FirstOrDefault(o => o.mapZone == info.MapZone);
+        Resources.UnloadAsset(references);
+
+        var saturation = info.Saturation;
+        var heroLightColour = info.HeroLight;
+        var ambientLight = info.AmbientLight;
+        var ambientIntensity = info.AmbientIntensity;
+
+        if (settings != null)
+        {
+            if (info.SetSaturation) saturation = settings.saturation;
+            if (info.SetHeroLight) heroLightColour = settings.heroLightColor;
+            if (info.SetAmbientIntensity) ambientIntensity = settings.defaultIntensity;
+            if (info.SetAmbientColour) ambientLight = settings.defaultColor;
+        }
+
+        var gm = CreateGradeMarker(heroLightColour, ambientLight, saturation, ambientIntensity);
+
+        if (settings != null)
+        {
+            gm.redChannel = new AnimationCurve(settings.redChannel.keys);
+            gm.blueChannel = new AnimationCurve(settings.blueChannel.keys);
+            gm.greenChannel = new AnimationCurve(settings.greenChannel.keys);
+        }
+
         CreateTileMap(info);
 
         // Title reference for custom title screen editing
@@ -306,7 +334,7 @@ public static class SceneUtils
         return m;
     }
     
-    public static void CreateGradeMarker(Color heroLight, Color ambient, float saturation)
+    public static GradeMarker CreateGradeMarker(Color heroLight, Color ambient, float saturation, float ambientIntensity)
     {
         var m = Object.Instantiate(_gradeMarker);
         var gm = m.GetComponent<GradeMarker>();
@@ -314,12 +342,15 @@ public static class SceneUtils
         gm.heroLightColor = heroLight;
         gm.ambientColor = ambient;
         gm.saturation = saturation;
+        gm.ambientIntensity = ambientIntensity;
 
         gm.maxIntensityRadius = 0;
         gm.cutoffRadius = float.PositiveInfinity;
         
         m.name = "GradeMarker";
         m.SetActive(true);
+
+        return gm;
     }
     
     public static void CreateTileMap(CustomScene scene)

@@ -226,21 +226,10 @@ public static class ReceiverGroup
         }))
     ];
     
-    public static readonly List<EventReceiverType> MagmaRocks = GroupUtils.Merge(Generic, [
-        EventManager.RegisterReceiverType(new EventReceiverType("magma_go", "Away", o =>
+    public static readonly List<EventReceiverType> InfectionPlume = GroupUtils.Merge(Generic, [
+        EventManager.RegisterReceiverType(new EventReceiverType("infection_plume_fire", "Fire", o =>
         {
-            o.LocateMyFSM("Control").SendEvent("AWAY");
-        })),
-        EventManager.RegisterReceiverType(new EventReceiverType("magma_back", "Return", o =>
-        {
-            o.LocateMyFSM("Control").SendEvent("RETURN");
-        }))
-    ]);
-    
-    public static readonly List<EventReceiverType> Blast = GroupUtils.Merge(Generic, [
-        EventManager.RegisterReceiverType(new EventReceiverType("servitor_blast", "Fire", o =>
-        {
-            o.LocateMyFSM("Control").SetState("Shoot");
+            o.LocateMyFSM("Control").SendEvent("AUTO");
         }))
     ]);
     
@@ -309,6 +298,17 @@ public static class ReceiverGroup
         EventManager.RegisterReceiverType(new EventReceiverType("battle_gate_close", "Close", o =>
         {
             o.LocateMyFSM("BG Control").SendEvent("BG CLOSE");
+        }))
+    ]);
+    
+    public static readonly List<EventReceiverType> DreamGate = GroupUtils.Merge(Generic, [
+        EventManager.RegisterReceiverType(new EventReceiverType("dream_gate_open", "Open", o =>
+        {
+            o.LocateMyFSM("Control").SendEvent("DREAM GATE OPEN");
+        })),
+        EventManager.RegisterReceiverType(new EventReceiverType("dream_gate_close", "Close", o =>
+        {
+            o.LocateMyFSM("Control").SendEvent("DREAM GATE CLOSE");
         }))
     ]);
     

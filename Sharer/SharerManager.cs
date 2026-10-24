@@ -23,7 +23,7 @@ public static class SharerManager
     // Appears when returnState is not null in the current MenuState
     public static Button ReturnBtn;
     
-    private static bool _sharerOpen;
+    public static bool SharerOpen;
     
     private static GameObject _sharer;
     private static GameObject _states;
@@ -95,7 +95,7 @@ public static class SharerManager
         var closeEditor = ResourceUtils.LoadSpriteResource("Sharer.close");
 
         var (btn, img, _) = UIUtils.MakeButtonWithImage("Toggle Sharer UI", _sharer,
-            new Vector3(-50, -50), new Vector2(1, 1), new Vector2(1, 1),
+            new Vector3(-50, -85), new Vector2(1, 1), new Vector2(1, 1),
             220, 220);
         OpenSharerBtn = btn.gameObject;
         img.sprite = openEditor;
@@ -105,8 +105,8 @@ public static class SharerManager
 
         void ToggleSharer()
         {
-            _sharerOpen = !_sharerOpen;
-            if (_sharerOpen)
+            SharerOpen = !SharerOpen;
+            if (SharerOpen)
             {
                 img.sprite = closeEditor;
                 _uiManager.StartCoroutine(FadeGameTitle());
@@ -126,15 +126,15 @@ public static class SharerManager
             var sprite = _uiManager.gameTitle;
             while (sprite.color.a > 0.0)
             {
-                if (!_sharerOpen) break;
+                if (!SharerOpen) break;
                 sprite.color = new Color(sprite.color.r, sprite.color.g, sprite.color.b,
                     sprite.color.a - Time.unscaledDeltaTime * 6.4f);
                 yield return null;
             }
 
-            sprite.color = new Color(sprite.color.r, sprite.color.g, sprite.color.b, _sharerOpen ? 0 : 1);
+            sprite.color = new Color(sprite.color.r, sprite.color.g, sprite.color.b, SharerOpen ? 0 : 1);
 
-            if (_sharerOpen)
+            if (SharerOpen)
             {
                 _states.SetActive(true);
                 EraseEditsBtn.SetActive(false);
@@ -150,7 +150,7 @@ public static class SharerManager
         var returnIcon = ResourceUtils.LoadSpriteResource("Sharer.return", FilterMode.Point);
 
         var (btn, img, _) = UIUtils.MakeButtonWithImage("Return", _sharer,
-            new Vector3(-50, -50), new Vector2(1, 1), new Vector2(1, 1),
+            new Vector3(-50, -85), new Vector2(1, 1), new Vector2(1, 1),
             220, 220);
         ReturnBtn = btn;
         ReturnBtn.gameObject.SetActive(false);
@@ -169,7 +169,7 @@ public static class SharerManager
     private static void SetupResetBtn()
     {
         var (eraseBtn, eraseImg, _) = UIUtils.MakeButtonWithImage("Erase Edits", _sharer,
-            new Vector3(-50, -140), new Vector2(1, 1), new Vector2(1, 1),
+            new Vector3(-50, -175), new Vector2(1, 1), new Vector2(1, 1),
             220, 220);
         var eraseAll = ResourceUtils.LoadSpriteResource("erase_all");
         var eraseAll3 = ResourceUtils.LoadSpriteResource("erase_all_3");

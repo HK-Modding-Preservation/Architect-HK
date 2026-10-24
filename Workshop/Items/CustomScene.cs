@@ -1,4 +1,5 @@
 using Architect.Storage;
+using GlobalEnums;
 using UnityEngine;
 
 namespace Architect.Workshop.Items;
@@ -12,7 +13,15 @@ public class CustomScene : SpriteItem
 
     public Color HeroLight = Color.white;
     public Color AmbientLight = Color.white;
+    public float AmbientIntensity = 0.8f;
     public float Saturation = 1;
+
+    public MapZone MapZone = MapZone.NONE;
+
+    public bool SetAmbientColour;
+    public bool SetAmbientIntensity;
+    public bool SetHeroLight;
+    public bool SetSaturation;
     
     public Vector3 MapPos;
     

@@ -45,7 +45,8 @@ public static class UtilityObjects
         CustomGradeMarker.Init();
         Categories.Utility.Add(new PreloadObject("Grade Marker", "grade_marker",
                 ("Tutorial_01", "_Markers/GradeMarker"),
-                preloadAction: MiscFixers.AddComponent<CustomGradeMarker>,
+                description: "Sets the lighting of a room or specific area.",
+                preloadAction: o => o.AddComponent<CustomGradeMarker>().custom = true,
                 sprite: ResourceUtils.LoadSpriteResource("grade_marker"))
             .WithConfigGroup(ConfigGroup.GradeMarker)
             .WithReceiverGroup(ReceiverGroup.GradeMarker));

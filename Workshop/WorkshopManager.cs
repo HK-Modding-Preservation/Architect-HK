@@ -31,6 +31,7 @@ public static class WorkshopManager
         Register<CustomScene>("Scene",
             new Vector2(-100, -225),
             ConfigGroup.Scene,
+            ConfigGroup.SceneLighting,
             ConfigGroup.SceneMap);
         
         CustomCharm.Init();

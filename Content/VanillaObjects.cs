@@ -585,6 +585,12 @@ public static class VanillaObjects
                 ("Ruins2_01", "Battle Gate"))
             .WithConfigGroup(ConfigGroup.BattleGate)
             .WithReceiverGroup(ReceiverGroup.BattleGate));
+        Categories.Interactable.Add(new PreloadObject("Dream Battle Gate", "dream_battle_gate",
+            ("Dream_03_Infected_Knight", "Dream Gate"),
+            preloadAction: o => o.GetComponent<tk2dSpriteAnimator>().defaultClipId = 1,
+            postSpawnAction: o => o.LocateMyFSM("Control").GetState("Close").DisableAction(3))
+            .WithReceiverGroup(ReceiverGroup.DreamGate)
+            .WithConfigGroup(ConfigGroup.DreamGate));
         Categories.Interactable.Add(new PreloadObject("City Gate", "city_gate",
                 ("Ruins2_01", "Ruins Gate 2"))
             .WithReceiverGroup(ReceiverGroup.CityGate));
