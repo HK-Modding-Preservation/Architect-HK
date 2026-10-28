@@ -32,6 +32,29 @@ public class MathsBlock : ScriptBlock
     }
 }
 
+public class UOpBlock : ScriptBlock
+{
+    protected override IEnumerable<(string, string)> OutputVars => [("Value", "Number")];
+    protected override IEnumerable<(string, string)> InputVars => [("Value", "Number")];
+    
+    protected override string Name => "Unary Operation";
+
+    public int Mode;
+
+    public override object GetValue(string id)
+    {
+        var v = GetVariable<float>("Value");
+        return Mode switch
+        {
+            0 => Mathf.Abs(v),
+            1 => -v,
+            2 => Mathf.Round(v),
+            3 => Mathf.Floor(v),
+            _ => Mathf.Ceil(v)
+        };
+    }
+}
+
 public class TrigBlock : ScriptBlock
 {
     protected override IEnumerable<(string, string)> OutputVars => [("Value", "Number")];

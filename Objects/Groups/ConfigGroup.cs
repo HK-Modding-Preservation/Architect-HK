@@ -2502,6 +2502,18 @@ public static class ConfigGroup
                     })
                 .WithOptions("Door", "Left", "Right", "Top", "Bottom").WithDefaultValue(0).WithPriority(-1)),
         ConfigurationManager.RegisterConfigType(
+            new ChoiceConfigType("Always Enter", "trans_facing_type",
+                    (o, value) =>
+                    {
+                        var val = value.GetValue();
+                        if (val == 0) return;
+                        
+                        var tp = o.GetComponent<TransitionPoint>();
+                        if (val == 1) tp.alwaysEnterLeft = true;
+                        else tp.alwaysEnterRight = true;
+                    })
+                .WithOptions("None", "Left", "Right").WithDefaultValue(0).WithPriority(-1)),
+        ConfigurationManager.RegisterConfigType(
             new StringConfigType("Door ID", "trans_id", (o, value) =>
             {
                 o.name = value.GetValue();

@@ -191,7 +191,7 @@ public static class VanillaObjects
             ("Mines_25", "Breakable Wall"), preloadAction: MiscFixers.FixBreakableWall)
             .WithConfigGroup(ConfigGroup.PersistentBreakable));
 
-        Categories.Interactable.Add(new PreloadObject("Breakable Wall 2", "breakable_wall_2",
+        Categories.Interactable.Add(new PreloadObject("Breakable Wall 2", "breakable_wall_3",
             ("Mines_16", "Breakable Wall"), preloadAction: MiscFixers.FixBreakableWall)
             .WithConfigGroup(ConfigGroup.PersistentBreakable));
 
@@ -677,6 +677,13 @@ public static class VanillaObjects
         AddEnemy("Crystal Crawler", "crystal_crawler", ("Mines_20", "Crystallised Lazer Bug (3)"))
             .WithRotationGroup(RotationGroup.Four);
         AddEnemy("Crystal Hunter", "crystal_hunter", ("Mines_25", "Crystal Flyer"));
+        
+        AddAttack("Crystal Bullet", "crystal_bullet", ("Mines_25", "Crystal Flyer"),
+            "Crystal Flyer", "Fire", 3)
+            .WithInputGroup(InputGroup.Velocity)
+            .WithReceiverGroup(ReceiverGroup.Velocity)
+            .WithConfigGroup(ConfigGroup.Velocity);
+        
         AddEnemy("Husk Miner", "husk_miner", ("Mines_20", "Zombie Miner 1"));
         
         AddAttack("Pickaxe", "husk_miner_pick", ("Mines_20", "Zombie Miner 1"),
