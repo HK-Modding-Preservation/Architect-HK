@@ -47,6 +47,7 @@ public class PreloadObject : PlaceableObject, IPreload
 
         var assetName = $"{Scene}/{Path}.prefab";
         if (!PreloadManager.Bundles.TryGetValue(Scene, out var bundle)) yield break;
+        if (!bundle.Contains(assetName)) yield break;
         
         var request = bundle.LoadAssetAsync<GameObject>(assetName);
 

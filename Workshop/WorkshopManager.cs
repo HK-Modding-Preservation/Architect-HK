@@ -54,18 +54,50 @@ public static class WorkshopManager
         Register<CustomMenuStyle>("Menu Style",
             new Vector2(-300, -337.5f),
             ConfigGroup.MenuStyle);
+        
+        Register<CustomPreloadObject>("Preload",
+            new Vector2(-100, -337.5f),
+            ConfigGroup.Preload);
     }
 
     private static readonly List<WorkshopData> ExtWorkshops = [];
+    private static bool _setup;
+    
+    public static void EarlySetup()
+    {
+        StorageManager.LoadWorkshopData();
+        foreach (var workshop in ExtWorkshops)
+        {
+            foreach (var item in workshop.Items
+                         .Where(i => i.RegisterEarly))
+            {
+                if (WorkshopData.Items.Any(i => i.Id == item.Id)) continue;
+                foreach (var cfg in item.CurrentConfig.Values) cfg.Setup(item);
+                item.Register();
+            }
+        }
+    }
     
     public static void Setup()
     {
-        StorageManager.LoadWorkshopData();
-        foreach (var item in ExtWorkshops.SelectMany(data => data.Items))
+        _setup = true;
+        foreach (var item in WorkshopData.Items
+                     .Where(i => !i.RegisterEarly))
         {
-            if (WorkshopData.Items.Any(i => i.Id == item.Id)) continue;
             foreach (var cfg in item.CurrentConfig.Values) cfg.Setup(item);
             item.Register();
+        }
+        WorkshopUI.Refresh();
+        
+        foreach (var workshop in ExtWorkshops)
+        {
+            foreach (var item in workshop.Items
+                         .Where(i => !i.RegisterEarly))
+            {
+                if (WorkshopData.Items.Any(i => i.Id == item.Id)) continue;
+                foreach (var cfg in item.CurrentConfig.Values) cfg.Setup(item);
+                item.Register();
+            }
         }
     }
 
@@ -82,6 +114,7 @@ public static class WorkshopManager
         WorkshopData = data;
         foreach (var item in WorkshopData.Items)
         {
+            if (!_setup && !item.RegisterEarly) continue;
             foreach (var cfg in item.CurrentConfig.Values) cfg.Setup(item);
             item.Register();
         }

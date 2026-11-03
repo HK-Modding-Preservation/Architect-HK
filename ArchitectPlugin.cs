@@ -133,6 +133,7 @@ public class ArchitectPlugin : Mod,
             Log("Could not load external maps");
         }
         
+        WorkshopManager.EarlySetup();
         PreloadManager.DoPreload(true);
         
         SharerManager.Init();

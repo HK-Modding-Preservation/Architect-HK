@@ -25,6 +25,12 @@ public static class PreloadManager
         if (!ToPreload.ContainsKey(obj.Scene)) ToPreload[obj.Scene] = [];
         ToPreload[obj.Scene].Add((obj.Path, obj));
     }
+    
+    public static void UnregisterPreload(IPreload obj)
+    {
+        if (ToPreload.TryGetValue(obj.Scene, out var value)) 
+            value.Remove((obj.Path, obj));
+    }
 
     public static void DoPreload(bool repack)
     {
@@ -57,6 +63,26 @@ public static class PreloadManager
         _status.verticalOverflow = VerticalWrapMode.Overflow;
     }
 
+    public static IEnumerator Repack(string sceneName)
+    {
+        if (Bundles.TryGetValue(sceneName, out var old)) old.Unload(false);
+        
+        var preloadJson = $"{{\"{sceneName}\":" +
+                          $"{JsonConvert.SerializeObject(ToPreload[sceneName].Select(p => p.Item1))}}}";
+
+        var (bundleData, _) = UnitySceneRepacker.Repack(
+            $"{PRELOAD_BUNDLE_NAME}_{sceneName}",
+            Preloader.DataPath,
+            preloadJson,
+            UnitySceneRepacker.Mode.AssetBundle
+        );
+        
+        var op = AssetBundle.LoadFromMemoryAsync(bundleData);
+        yield return op;
+
+        Bundles[sceneName] = op.assetBundle;
+    }
+
     private static IEnumerator Preload(bool repack)
     {
         if (repack)
@@ -65,24 +91,10 @@ public static class PreloadManager
             var i = 0;
             foreach (var sceneName in ToPreload.Keys)
             {
-                var preloadJson = $"{{\"{sceneName}\":" +
-                                  $"{JsonConvert.SerializeObject(ToPreload[sceneName].Select(p => p.Item1))}}}";
-
-                var (bundleData, _) = UnitySceneRepacker.Repack(
-                    $"{PRELOAD_BUNDLE_NAME}_{sceneName}",
-                    Preloader.DataPath,
-                    preloadJson,
-                    UnitySceneRepacker.Mode.AssetBundle
-                );
-
                 _status.text = "Repacking Scenes\n" +
                                $"{i} / {sceneCount}\n" +
                                $"{sceneName}";
-
-                var op = AssetBundle.LoadFromMemoryAsync(bundleData);
-                yield return op;
-
-                Bundles[sceneName] = op.assetBundle;
+                yield return Repack(sceneName);
                 i++;
             }
         }

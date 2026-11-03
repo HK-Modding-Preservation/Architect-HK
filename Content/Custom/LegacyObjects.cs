@@ -19,6 +19,26 @@ public static class LegacyObjects
         Categories.Legacy.Add(CreateRelay());
         Categories.Legacy.Add(CreateTextDisplay());
         Categories.Legacy.Add(CreateChoiceDisplay());
+        Categories.Legacy.Add(CreateObjectExtractor());
+    }
+
+    private static PlaceableObject CreateObjectExtractor()
+    {
+        var extractor = new GameObject("Object Extractor");
+        extractor.SetActive(false);
+        Object.DontDestroyOnLoad(extractor);
+        
+        ObjectExtractor.Init();
+        extractor.AddComponent<ObjectExtractor>();
+
+        return new CustomObject("Object Extractor", "object_extractor",
+                extractor,
+                sprite: ResourceUtils.LoadSpriteResource("object_extractor", FilterMode.Point),
+                description: "Can extract any vanilla object from a scene and spawn it elsewhere.\n" +
+                             "Useful for spawning things like vanilla textures.\n" +
+                             "Not everything will work outside of its normal location.")
+            .WithConfigGroup(ConfigGroup.ObjectExtractor)
+            .WithOutputGroup(OutputGroup.ObjectExtractor);
     }
 
     private static PlaceableObject CreateTimer()

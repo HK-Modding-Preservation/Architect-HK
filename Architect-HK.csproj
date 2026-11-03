@@ -4,7 +4,7 @@
     <TargetFramework>net472</TargetFramework>
     <AssemblyName>Architect_HK</AssemblyName>
     <Product>Architect</Product>
-    <Version>3.39.5.0</Version>
+    <Version>3.40.0.0</Version>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <LangVersion>preview</LangVersion>
     <Nullable>disable</Nullable>
@@ -305,6 +305,9 @@
     </Reference>
     <Reference Include="FsmMaster" Publicize="true">
       <HintPath>$(ModsPath)/FsmMaster/FsmMaster.dll</HintPath>
+    </Reference>
+    <Reference Include="MenuChanger">
+      <HintPath>$(ModsPath)/MenuChanger/MenuChanger.dll</HintPath>
     </Reference>
   </ItemGroup>
   

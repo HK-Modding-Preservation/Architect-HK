@@ -16,6 +16,8 @@ public abstract class WorkshopItem
 
     public virtual string LoadScene => null;
 
+    public virtual bool RegisterEarly => false;
+
     public List<ConfigType>[] Config;
     
     public Dictionary<string, ConfigValue> CurrentConfig;

@@ -247,6 +247,7 @@ public abstract class ScriptBlock
         BlockInstance = BlockObject.AddComponent<ScriptBlockInstance>();
         BlockInstance.img = img;
         BlockInstance.Block = this;
+        BlockInstance.LayerChanged(ScriptManager.Layer);
 
         if (Name != null)
         {

@@ -62,14 +62,14 @@ public class CustomGradeMarker : MonoBehaviour
         On.GradeMarker.Activate += (orig, self) =>
         {
             var cgm = self.gameObject.GetOrAddComponent<CustomGradeMarker>();
-            if (IsStrongestGradeMarker(cgm, self)) orig(self);
+            if (IsStrongestGradeMarker(cgm)) orig(self);
             else cgm.shutDown = true;
         };
 
         On.GradeMarker.ActivateGradual += (orig, self) =>
         {
             var cgm = self.gameObject.GetOrAddComponent<CustomGradeMarker>();
-            if (IsStrongestGradeMarker(cgm, self)) orig(self);
+            if (IsStrongestGradeMarker(cgm)) orig(self);
             else cgm.shutDown = true;
         };
 
@@ -82,7 +82,7 @@ public class CustomGradeMarker : MonoBehaviour
         On.GradeMarker.Update += (orig, self) =>
         {
             var cgm = self.GetComponent<CustomGradeMarker>();
-            if (IsStrongestGradeMarker(cgm, self))
+            if (IsStrongestGradeMarker(cgm))
             {
                 var gradeEnabled = self.enableGrade;
                 orig(self);
@@ -97,7 +97,7 @@ public class CustomGradeMarker : MonoBehaviour
         {
             if (!gm.enableGrade) continue;
             var cgm = gm.GetComponent<CustomGradeMarker>();
-            if (cgm && cgm.shutDown && IsStrongestGradeMarker(cgm, gm))
+            if (cgm && cgm.shutDown && IsStrongestGradeMarker(cgm))
             {
                 cgm.shutDown = false;
                 gm.Activate();
@@ -105,10 +105,11 @@ public class CustomGradeMarker : MonoBehaviour
         }
     }
 
-    private static bool IsStrongestGradeMarker(CustomGradeMarker cgm, GradeMarker gm)
+    private static bool IsStrongestGradeMarker(CustomGradeMarker cgm)
     {
         var priority = cgm ? cgm.priority : 0;
-        var heroPos = gm.hero.transform.position;
+        if (!HeroController.instance) return true;
+        var heroPos = HeroController.instance.transform.position;
         
         foreach (var marker in GradeMarkers)
         {
