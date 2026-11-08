@@ -17,6 +17,8 @@ public static class DcmPorter
     // Register config types
     public static void Init()
     {
+        DcmSawMovement.Init();
+        
         ConfigurationManager.RegisterConfigType(
             new FloatConfigType("Colour R", "colour_red", (o, value) =>
             {
@@ -84,7 +86,7 @@ public static class DcmPorter
         ArchitectPlugin.Instance.Log("DcM Data found");
         
         ArchitectPlugin.Instance.Log("Saving DcM object prefabs");
-        string[] prefabs = ["Line", "RespawnPlat", "Sporg", "Wall", "Conveyor", "Spikes", "Jarcol", "Lever", "Gate", "ZoteMachine", "ZoteGate", "Saw", "Stomper", "StomperLever", "Tp", "Twinkle", "Plat", "MarioPlat", "Dash", "Spirit", "Dive", "Wraiths", "Pogo", "Claw", "Wings", "Cdash", "Mana", "Piano", "ManaMachine", "ManaGate"];
+        string[] prefabs = ["Line", "RespawnPlat", "Sporg", "Wall", "Conveyor", "Spikes", "Jarcol", "Lever", "Gate", "ZoteMachine", "ZoteGate", "Stomper", "StomperLever", "Tp", "Twinkle", "Plat", "MarioPlat", "Dash", "Spirit", "Dive", "Wraiths", "Pogo", "Claw", "Wings", "Cdash", "Mana", "Piano", "ManaMachine", "ManaGate"];
         foreach (var s in prefabs)
         {
             var path = Path.Combine(StorageManager.DataPath, "Prefabs", $"Prefab_DCM_{s}.architect.json");

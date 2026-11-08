@@ -233,11 +233,12 @@
     }
   },
   "HK_saw": {
-    "name": "prefab_DCM_Saw",
+    "name": "wp_saw",
+    "scale": 0.785,
     "config": {
-      "speed": "prefab_config_6653ed1d-8b51-409a-8355-52cef4ddb77f",
-      "span": "prefab_config_cf530044-cf09-4200-bf3d-e1b220bbfe2b",
-      "offset": "prefab_config_519163eb-3be8-4dd7-9a2b-27fb5c4b183d"
+      "speed": "dcm_speed",
+      "span": "dcm_span",
+      "offset": "dcm_offset"
     }
   },
   "mary_move_platform": {
