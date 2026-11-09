@@ -19,7 +19,7 @@ public static class SharerManager
     // Appears when on HK main menu or sharer main menu
     public static GameObject OpenSharerBtn;
     // Appears on HK main menu
-    public static GameObject EraseEditsBtn;
+    private static GameObject _eraseEditsBtn;
     // Appears when returnState is not null in the current MenuState
     public static Button ReturnBtn;
     
@@ -34,6 +34,8 @@ public static class SharerManager
     private static UIManager _uiManager;
 
     public static readonly Sprite Placeholder = ResourceUtils.LoadSpriteResource("Sharer.placeholder", FilterMode.Point);
+    
+    private static Image _bg;
     
     public static void Init()
     {
@@ -55,21 +57,32 @@ public static class SharerManager
         srt.anchoredPosition = Vector2.zero;
         srt.anchorMin = srt.anchorMax = new Vector2(0.5f, 0.5f);
         
-        var bg = UIUtils.MakeImage("Background", _states, Vector3.zero,
+        _bg = UIUtils.MakeImage("Background", _states, Vector3.zero,
             new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(3000, 3000));
-        bg.sprite = ResourceUtils.LoadSpriteResource("Sharer.bg");
+        _bg.sprite = ResourceUtils.LoadSpriteResource("Sharer.bg");
         
         SetupToggleBtn();
         SetupReturnBtn();
         SetupResetBtn();
         
         HomeState = SetupMenuState<Home>("Home");
+        
+        typeof(UIManager).Hook(nameof(UIManager.UIGoToMainMenu),
+            (Action<UIManager> orig, UIManager self) =>
+            {
+                orig(self);
+                AdjustNavigations();
+            });
     }
 
     public static void Update()
     {
-        if (!UIManager.instance) return;
-        _uiManager = UIManager.instance;
+        if (!_uiManager)
+        {
+            if (!UIManager.instance) return;
+            _uiManager = UIManager.instance;
+            SetupSharerBtn();
+        }
         _sharer.SetActive(_uiManager.menuState == MainMenuState.MAIN_MENU && PreloadManager.HasPreloaded);
     }
 
@@ -89,36 +102,45 @@ public static class SharerManager
         return obj.AddComponent<T>();
     }
 
-    private static void SetupToggleBtn()
+    private static MenuButton _sharerBtn;
+
+    private static void SetupSharerBtn()
     {
-        var openEditor = ResourceUtils.LoadSpriteResource("Sharer.open");
-        var closeEditor = ResourceUtils.LoadSpriteResource("Sharer.close");
+        var optionsBtn = _uiManager.mainMenuButtons.optionsButton;
+        
+        var sharerBtnObj = Object.Instantiate(optionsBtn.gameObject, _uiManager.mainMenuButtons.transform);
+        _sharerBtn = sharerBtnObj.GetComponent<MenuButton>();
+        sharerBtnObj.name = "SharerButton";
+        
+        sharerBtnObj.transform.SetAsLastSibling();
+        sharerBtnObj.transform.SetSiblingIndex(optionsBtn.transform.GetSiblingIndex() + 1);
 
-        var (btn, img, _) = UIUtils.MakeButtonWithImage("Toggle Sharer UI", _sharer,
-            new Vector3(-50, -85), new Vector2(1, 1), new Vector2(1, 1),
-            220, 220);
-        OpenSharerBtn = btn.gameObject;
-        img.sprite = openEditor;
-
-        btn.onClick.AddListener(ToggleSharer);
+        var textUI = sharerBtnObj.GetComponent<AutoLocalizeTextUI>();
+        textUI.textKey = "Level Sharer";
+        textUI.sheetTitle = "ArchitectMod";
+        textUI.RefreshTextFromLocalization();
+        
+        var et = sharerBtnObj.GetComponent<EventTrigger>();
+        et.triggers.Clear();
+        AddTrigger(EventTriggerType.Submit);
+        AddTrigger(EventTriggerType.PointerClick);
+        
+        AdjustNavigations();
         return;
 
-        void ToggleSharer()
+        void AddTrigger(EventTriggerType triggerType)
         {
-            SharerOpen = !SharerOpen;
-            if (SharerOpen)
+            var entry = new EventTrigger.Entry
             {
-                img.sprite = closeEditor;
+                eventID = triggerType
+            };
+            entry.callback.AddListener(_ =>
+            {
+                SharerOpen = true;
                 _uiManager.StartCoroutine(FadeGameTitle());
                 _uiManager.StartCoroutine(_uiManager.FadeOutCanvasGroup(_uiManager.mainMenuScreen));
-            }
-            else
-            {
-                img.sprite = openEditor;
-                _states.SetActive(false);
-                EraseEditsBtn.SetActive(true);
-                _uiManager.UIGoToMainMenu();
-            }
+            });
+            et.triggers.Add(entry);
         }
     
         IEnumerator FadeGameTitle()
@@ -133,15 +155,68 @@ public static class SharerManager
             }
 
             sprite.color = new Color(sprite.color.r, sprite.color.g, sprite.color.b, SharerOpen ? 0 : 1);
-
+            
             if (SharerOpen)
             {
+                _bg.color = Color.clear;
                 _states.SetActive(true);
-                EraseEditsBtn.SetActive(false);
+                OpenSharerBtn.SetActive(true);
+                _eraseEditsBtn.SetActive(true);
                 TransitionToState(HomeState);
+
+                var i = 0f;
+                while (i < 1)
+                {
+                    yield return null;
+                    i += Time.deltaTime * 5;
+                    _bg.color = Color.Lerp(Color.clear, Color.white, Mathf.Clamp01(i));
+                }
+
+                _bg.color = Color.white;
             }
 
             yield return null;
+        }
+    }
+
+    private static void AdjustNavigations()
+    {
+        var optionsBtn = _uiManager.mainMenuButtons.optionsButton;
+        var achievementsBtn = _uiManager.mainMenuButtons.achievementsButton;
+        
+        var sharerNav = _sharerBtn.navigation;
+        sharerNav.mode = Navigation.Mode.Automatic;
+        _sharerBtn.navigation = sharerNav;
+
+        var optionsNav = optionsBtn.navigation;
+        optionsNav.mode = Navigation.Mode.Automatic;
+        optionsBtn.navigation = optionsNav;
+
+        var achievementsNav = achievementsBtn.navigation;
+        achievementsNav.mode = Navigation.Mode.Automatic;
+        achievementsBtn.navigation = achievementsNav;
+    }
+
+    private static void SetupToggleBtn()
+    {
+        var (btn, img, _) = UIUtils.MakeButtonWithImage("Toggle Sharer UI", _sharer,
+            new Vector3(-50, -50), new Vector2(1, 1), new Vector2(1, 1),
+            220, 220);
+        OpenSharerBtn = btn.gameObject;
+        OpenSharerBtn.SetActive(false);
+        img.sprite = ResourceUtils.LoadSpriteResource("Sharer.close");
+
+        btn.onClick.AddListener(ToggleSharer);
+        return;
+
+        void ToggleSharer()
+        {
+            SharerOpen = false;
+            
+            _states.SetActive(false);
+            OpenSharerBtn.SetActive(false);
+            _eraseEditsBtn.SetActive(false);
+            _uiManager.UIGoToMainMenu();
         }
     }
 
@@ -150,7 +225,7 @@ public static class SharerManager
         var returnIcon = ResourceUtils.LoadSpriteResource("Sharer.return", FilterMode.Point);
 
         var (btn, img, _) = UIUtils.MakeButtonWithImage("Return", _sharer,
-            new Vector3(-50, -85), new Vector2(1, 1), new Vector2(1, 1),
+            new Vector3(-50, -50), new Vector2(1, 1), new Vector2(1, 1),
             220, 220);
         ReturnBtn = btn;
         ReturnBtn.gameObject.SetActive(false);
@@ -169,14 +244,15 @@ public static class SharerManager
     private static void SetupResetBtn()
     {
         var (eraseBtn, eraseImg, _) = UIUtils.MakeButtonWithImage("Erase Edits", _sharer,
-            new Vector3(-50, -175), new Vector2(1, 1), new Vector2(1, 1),
+            new Vector3(-50, -140), new Vector2(1, 1), new Vector2(1, 1),
             220, 220);
         var eraseAll = ResourceUtils.LoadSpriteResource("erase_all");
         var eraseAll3 = ResourceUtils.LoadSpriteResource("erase_all_3");
         var eraseAll2 = ResourceUtils.LoadSpriteResource("erase_all_2");
         var eraseAll1 = ResourceUtils.LoadSpriteResource("erase_all_1");
 
-        EraseEditsBtn = eraseBtn.gameObject;
+        _eraseEditsBtn = eraseBtn.gameObject;
+        _eraseEditsBtn.SetActive(false);
 
         eraseImg.sprite = eraseAll;
 
