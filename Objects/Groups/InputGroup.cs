@@ -16,7 +16,9 @@ public static class InputGroup
     public static readonly List<(string, string)> ColoWall = [("Distance", "Number")];
     
     public static readonly List<(string, string)> FsmHook = [("Event", "Text"), ("Action", "Number")];
-    
+
+    public static readonly List<(string, string)> Txt = [("New Value", "Text")];
+
     public static readonly List<(string, string)> EnemyDamager = [("New Damage", "Number")];
     
     public static readonly List<(string, string)> Feather = [("Rotation", "Number")];
